@@ -5,6 +5,7 @@ from django.db import models
 class CustomUser(AbstractUser):
     username = None
     email = models.EmailField(("email address"), max_length=254, unique=True)
+    is_tutor = models.BooleanField(default=False)
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
