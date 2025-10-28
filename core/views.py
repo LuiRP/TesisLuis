@@ -110,9 +110,8 @@ def create_review(request, pk):
             )
             t.save()
 
-            previous_page_url = request.META.get("HTTP_REFERER")
-            fallback_url = reverse("tutorship")
-            return redirect(previous_page_url or fallback_url)
+            redirect_url = reverse("public_user", kwargs={"pk": reviewed.pk})
+            return HttpResponseRedirect(redirect_url)
     else:
         form = forms.ReviewForm()
     return render(request, "review/create.html", {"form": form, "tutor": reviewed})
@@ -124,7 +123,6 @@ def edit_review(request, pk):
     review_to_edit = get_object_or_404(models.Review, pk=pk)
     if review_to_edit.author != request.user:
         raise PermissionDenied()
-    previous_page = request.META.get("HTTP_REFERER") or reverse("home")
 
     if request.method == "POST":
         form = forms.ReviewForm(request.POST)
@@ -133,7 +131,11 @@ def edit_review(request, pk):
             review_to_edit.body = form.cleaned_data["body"]
             review_to_edit.rating = form.cleaned_data["rating"]
             review_to_edit.save()
-            return redirect(previous_page)
+
+            redirect_url = reverse(
+                "public_user", kwargs={"pk": review_to_edit.reviewed.pk}
+            )
+            return HttpResponseRedirect(redirect_url)
     else:
         initial_data = {
             "body": review_to_edit.body,
@@ -159,5 +161,7 @@ def delete_review(request, pk):
         raise PermissionDenied()
     if request.method == "POST":
         review.delete()
-        return HttpResponseRedirect("/tutorship")
-    return HttpResponseRedirect("/tutorship")
+        redirect_url = reverse("public_user", kwargs={"pk": review.reviewed.pk})
+        return HttpResponseRedirect(redirect_url)
+    redirect_url = reverse("public_user", kwargs={"pk": review.reviewed.pk})
+    return HttpResponseRedirect(redirect_url)

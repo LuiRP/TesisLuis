@@ -2,7 +2,9 @@
 
 
 {% block content %} 
+    {% if request.user.is_tutor %}
     <a href="{% url "create_tutorship" %}">Crear tutoria</a>
+    {% endif %}
 
 
 <h1>Tutorias</h1>
