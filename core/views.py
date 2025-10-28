@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.http import Http404
+from django.core.exceptions import PermissionDenied
 from . import models
 from . import forms
 
@@ -24,6 +24,7 @@ def tutorships(request):
 
 
 @login_required
+@permission_required("core.add_tutorship", raise_exception=True)
 def create_tutorship(request):
     if request.method == "POST":
         form = forms.TutorshipForm(request.POST)
@@ -40,10 +41,11 @@ def create_tutorship(request):
 
 
 @login_required
+@permission_required("core.change_tutorship", raise_exception=True)
 def edit_tutorship(request, pk):
     tutorship = get_object_or_404(models.Tutorship, pk=pk)
     if tutorship.tutor != request.user:
-        raise Http404("You are not authorized to edit this review.")
+        raise PermissionDenied()
     if request.method == "POST":
         form = forms.TutorshipForm(request.POST)
         if form.is_valid():
@@ -65,10 +67,11 @@ def edit_tutorship(request, pk):
 
 
 @login_required
+@permission_required("core.delete_tutorship", raise_exception=True)
 def delete_tutorship(request, pk):
     tutorship = get_object_or_404(models.Tutorship, pk=pk)
     if tutorship.tutor != request.user:
-        raise Http404("You are not authorized to edit this review.")
+        raise PermissionDenied()
     if request.method == "POST":
         tutorship.delete()
         return HttpResponseRedirect("/tutorship")
@@ -93,6 +96,7 @@ def public_user(request, pk):
 
 
 @login_required
+@permission_required("core.add_review", raise_exception=True)
 def create_review(request, pk):
     reviewed = get_object_or_404(models.CustomUser, pk=pk)
     if request.method == "POST":
@@ -115,10 +119,11 @@ def create_review(request, pk):
 
 
 @login_required
+@permission_required("core.change_review", raise_exception=True)
 def edit_review(request, pk):
     review_to_edit = get_object_or_404(models.Review, pk=pk)
     if review_to_edit.author != request.user:
-        raise Http404("You are not authorized to edit this review.")
+        raise PermissionDenied()
     previous_page = request.META.get("HTTP_REFERER") or reverse("home")
 
     if request.method == "POST":
@@ -147,10 +152,11 @@ def edit_review(request, pk):
 
 
 @login_required
+@permission_required("core.delete_review", raise_exception=True)
 def delete_review(request, pk):
     review = get_object_or_404(models.Review, pk=pk)
     if review.author != request.user:
-        raise Http404("You are not authorized to edit this review.")
+        raise PermissionDenied()
     if request.method == "POST":
         review.delete()
         return HttpResponseRedirect("/tutorship")
