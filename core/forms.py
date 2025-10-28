@@ -22,6 +22,6 @@ class TutorshipForm(forms.Form):
     description = forms.CharField(label="Descripcion", widget=forms.Textarea)
 
 
-class ReviewForm(forms.form):
+class ReviewForm(forms.Form):
     body = forms.CharField(label="Descripcion", widget=forms.Textarea)
     rating = forms.IntegerField(label="Calificación", max_value=5, min_value=0)

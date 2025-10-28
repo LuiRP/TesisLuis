@@ -68,3 +68,12 @@ def delete_tutorship(request, pk):
         tutorship.delete()
         return HttpResponseRedirect("/tutorship")
     return HttpResponseRedirect("/tutorship")
+
+
+def public_user(request, pk):
+    tutor = get_object_or_404(models.CustomUser, pk=pk)
+    return render(
+        request,
+        "profile/public.html",
+        {"tutor": tutor},
+    )

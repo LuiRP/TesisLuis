@@ -7,4 +7,5 @@ urlpatterns = [
     path("tutorship/create", views.create_tutorship, name="create_tutorship"),
     path("tutorship/edit/<int:pk>", views.edit_tutorship, name="edit_tutorship"),
     path("tutorship/delete/<int:pk>/", views.delete_tutorship, name="delete_tutorship"),
+    path("user/<int:pk>/", views.public_user, name="public_user"),
 ]
