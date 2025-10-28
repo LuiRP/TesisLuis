@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+
 # Create your models here.
 class CustomUser(AbstractUser):
     username = None
@@ -12,3 +13,9 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.email
+
+
+class Tutorship(models.Model):
+    name = models.CharField("Nombre de la tutoria", max_length=254)
+    tutor = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    description = models.TextField("Descripcion de la tutoria")
