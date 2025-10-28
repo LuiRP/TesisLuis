@@ -13,18 +13,21 @@
             <h2>{{ tutorship.name }}</h2>
             <p>{{ tutorship.description }}</p>
             <ul>
-                <li><a href="{% url "edit_tutorship" pk=tutorship.pk %}">Editar</a></li>
+                
                 <li><a href="">Contactar con tutor</a></li>
                 <li><a href="{% url "public_user" pk=tutorship.tutor_id %}">Ver detalles del tutor</a></li>
-                <li>
-                    <form action="{% url "delete_tutorship" pk=tutorship.pk %}" method="post" 
-                    onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta tutoría?');">
-                    {% csrf_token %}
-                        <button type="submit">
-                            Eliminar Tutoría
-                        </button>
-                    </form>
-                </li>
+                {% if request.user == tutorship.tutor %}
+                    <li><a href="{% url "edit_tutorship" pk=tutorship.pk %}">Editar</a></li>
+                    <li>
+                        <form action="{% url "delete_tutorship" pk=tutorship.pk %}" method="post" 
+                        onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta tutoría?');">
+                        {% csrf_token %}
+                            <button type="submit">
+                                Eliminar Tutoría
+                            </button>
+                        </form>
+                    </li>
+                {% endif %}
             </ul>
     </div>
     {% endfor %}

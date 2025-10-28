@@ -10,6 +10,9 @@ urlpatterns = [
     path("tutorship/edit/<int:pk>", views.edit_tutorship, name="edit_tutorship"),
     path("tutorship/delete/<int:pk>/", views.delete_tutorship, name="delete_tutorship"),
     path("user/<int:pk>/", views.public_user, name="public_user"),
+    path("review/create/<int:pk>", views.create_review, name="create_review"),
+    path("review/edit/<int:pk>", views.edit_review, name="edit_review"),
+    path("review/delete/<int:pk>/", views.delete_review, name="delete_review"),
 ]
 
 if settings.DEBUG:
