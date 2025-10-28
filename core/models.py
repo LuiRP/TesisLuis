@@ -8,6 +8,14 @@ class CustomUser(AbstractUser):
     full_name = models.CharField("full name", max_length=254)
     email = models.EmailField("email address", max_length=254, unique=True)
     is_tutor = models.BooleanField(default=False)
+
+    profile_picture = models.ImageField(
+        upload_to="profile_pics/",
+        null=True,
+        blank=True,
+        default="profile_pics/default.jpg",
+    )
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 

@@ -1,6 +1,7 @@
 {% extends "layouts/base.html" %}
 
 {% block content %} 
+<img src="{{ tutor.profile_picture.url }}" width="200" height="200">
 <h2>{{ tutor.full_name }}</h2>
 <h3>{{ tutor.email }}</h3>
 {% endblock content %}
