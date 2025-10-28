@@ -1,0 +1,32 @@
+{% extends "layouts/base.html" %}
+
+
+{% block content %} 
+    <a href="{% url "create_tutorship" %}">Crear tutoria</a>
+
+
+<h1>Tutorias</h1>
+
+<div>
+    {% for tutorship in page_obj %}
+        <div>
+            <h2>{{ tutorship.name }}</h2>
+            <p>{{ tutorship.description }}</p>
+            <ul>
+                <li><a href="{% url "edit_tutorship" pk=tutorship.pk %}">Editar</a></li>
+                <li><a href="">Contactar con tutor</a></li>
+                <li><a href="">Ver detalles del tutor</a></li>
+                <li>
+                    <form action="{% url "delete_tutorship" pk=tutorship.pk %}" method="post" 
+                    onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta tutoría?');">
+                    {% csrf_token %}
+                        <button type="submit">
+                            Eliminar Tutoría
+                        </button>
+                    </form>
+                </li>
+            </ul>
+    </div>
+    {% endfor %}
+</div>
+{% endblock content %}

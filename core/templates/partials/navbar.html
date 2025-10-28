@@ -1,0 +1,25 @@
+<nav>
+    {% if user.is_authenticated %}
+        <ul>
+            <li>
+                <a href="{% url "tutorship" %}">Tutorias</a>
+            </li>
+            <li>
+                <a href="">Mensajes</a>
+            </li>
+            <li>
+                <a href="{% url 'account_logout' %}">Cerrar Sesión</a>
+            </li>
+        </ul>
+    {% else %}
+        <ul>
+            <li>
+                <a href="{% url 'account_login' %}">Iniciar Sesión</a>
+            </li>
+            <li>
+                <a href="{% url 'account_signup' %}">Registrarse</a>
+            </li>
+        </ul>
+    {% endif %}
+    
+</nav>

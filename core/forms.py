@@ -15,3 +15,8 @@ class ExpandedSignUpForm(forms.Form):
         user.full_name = self.cleaned_data["full_name"]
         user.is_tutor = self.cleaned_data["is_tutor"]
         user.save()
+
+
+class TutorshipForm(forms.Form):
+    name = forms.CharField(label="Nombre", max_length=254, required=True)
+    description = forms.CharField(label="Descripcion", widget=forms.Textarea)

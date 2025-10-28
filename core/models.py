@@ -17,5 +17,6 @@ class CustomUser(AbstractUser):
 
 class Tutorship(models.Model):
     name = models.CharField("Nombre de la tutoria", max_length=254)
-    tutor = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    tutor = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     description = models.TextField("Descripcion de la tutoria")
+    created_at = models.DateTimeField(auto_now_add=True)
