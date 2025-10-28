@@ -20,3 +20,8 @@ class ExpandedSignUpForm(forms.Form):
 class TutorshipForm(forms.Form):
     name = forms.CharField(label="Nombre", max_length=254, required=True)
     description = forms.CharField(label="Descripcion", widget=forms.Textarea)
+
+
+class ReviewForm(forms.form):
+    body = forms.CharField(label="Descripcion", widget=forms.Textarea)
+    rating = forms.IntegerField(label="Calificación", max_value=5, min_value=0)

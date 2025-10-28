@@ -20,3 +20,15 @@ class Tutorship(models.Model):
     tutor = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     description = models.TextField("Descripcion de la tutoria")
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Review(models.Model):
+    author = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="authored_reviews"
+    )
+    reviewed = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="received_reviews"
+    )
+    body = models.TextField("Cuerpo de la reseña")
+    rating = models.IntegerField(default=0, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
