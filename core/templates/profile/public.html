@@ -5,7 +5,11 @@
 <h2>{{ tutor.full_name }}</h2>
 <h3>{{ tutor.email }}</h3>
 
-<a href="{% url "create_review" pk=tutor.pk %}">Crear reseña</a>
+    {% if request.user.is_tutor %}
+    {% else %}
+    <a href="{% url "create_review" pk=tutor.pk %}">Crear reseña</a>
+    {% endif %}
+
 
 {% if page_obj %}
     {% for review in page_obj %}
@@ -34,7 +38,23 @@
     
     {% else %}
     <p>Este usuario no tiene reseñas.</p>
-{% endif %}
+    {% endif %}
+
+    {% if page_obj.has_other_pages %}
+        <div>
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Anterior</a>
+            {% endif %}
+
+            <span>
+                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Siguiente</a>
+            {% endif %}
+        </div>
+    {% endif %}
 
 
 {% endblock content %}

@@ -2,13 +2,27 @@
 
 
 {% block content %} 
+<h1>Tutorias</h1>
     {% if request.user.is_tutor %}
     <a href="{% url "create_tutorship" %}">Crear tutoria</a>
     {% endif %}
 
 
-<h1>Tutorias</h1>
+<form action="" method="get"> 
+    <input type="text" name="search" value="{{ search_query|default:'' }}" placeholder="Buscar tutorías">
+    <button type="submit">Buscar</button>
 
+    {% if request.user.is_tutor %}
+        <div>
+            <input 
+                type="checkbox" 
+                id="my_tutorships" 
+                name="my_tutorships" 
+                {% if show_my_tutorships %}checked{% endif %}>
+            <label for="my_tutorships">Mostrar solo mis tutorías</label>
+        </div>
+    {% endif %}
+</form>
 <div>
     {% for tutorship in page_obj %}
         <div>
@@ -32,6 +46,24 @@
                 {% endif %}
             </ul>
     </div>
+    {% empty %}
+        <p>No se encontraron tutorías.</p>
     {% endfor %}
+
+    {% if page_obj.has_other_pages %}
+        <div>
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Anterior</a>
+            {% endif %}
+
+            <span>
+                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Siguiente</a>
+            {% endif %}
+        </div>
+    {% endif %}
 </div>
 {% endblock content %}

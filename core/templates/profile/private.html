@@ -1,0 +1,14 @@
+{% extends "layouts/base_with_profile_sidebar.html" %}
+
+{% block content %} 
+
+<img src="{{ request.user.profile_picture.url }}" width="200" height="200">
+<h2>{{ request.user.full_name }}</h2>
+
+{% if request.user.is_tutor %}
+    <p>Tutor</p>
+{% else %}
+    <p>Usuario</p>
+{% endif %}
+
+{% endblock content %}

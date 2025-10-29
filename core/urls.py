@@ -13,6 +13,7 @@ urlpatterns = [
     path("review/create/<int:pk>", views.create_review, name="create_review"),
     path("review/edit/<int:pk>", views.edit_review, name="edit_review"),
     path("review/delete/<int:pk>/", views.delete_review, name="delete_review"),
+    path("account/profile", views.private_profile, name="private_profile"),
 ]
 
 if settings.DEBUG:
