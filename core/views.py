@@ -191,3 +191,25 @@ def delete_review(request, pk):
 @login_required
 def private_profile(request):
     return render(request, "profile/private.html")
+
+
+@login_required
+def profile_update_view(request):
+    user = request.user
+    if request.method == "POST":
+        form = forms.UserProfileUpdateForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            new_full_name = form.cleaned_data["full_name"]
+            new_profile_picture = form.cleaned_data.get("profile_picture")
+            user.full_name = new_full_name
+            if new_profile_picture:
+                user.profile_picture = new_profile_picture
+            user.save()
+            return redirect("private_profile")
+    else:
+        initial_data = {
+            "full_name": user.full_name,
+        }
+        form = forms.UserProfileUpdateForm(initial=initial_data)
+    return render(request, "profile/edit.html", {"form": form})

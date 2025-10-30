@@ -1,0 +1,12 @@
+{% extends "layouts/base_with_profile_sidebar.html" %}
+
+
+{% block content %} 
+<h1>Editar Reseña</h1>
+
+<form action="{% url "profile_update_view" %}" enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Submit">
+</form>
+{% endblock content %}

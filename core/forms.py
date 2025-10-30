@@ -1,4 +1,5 @@
 from django import forms
+from . import models
 
 
 class ExpandedSignUpForm(forms.Form):
@@ -25,3 +26,12 @@ class TutorshipForm(forms.Form):
 class ReviewForm(forms.Form):
     body = forms.CharField(label="Descripcion", widget=forms.Textarea)
     rating = forms.IntegerField(label="Calificación", max_value=5, min_value=0)
+
+
+class UserProfileUpdateForm(forms.Form):
+    full_name = forms.CharField(label="Nombre Completo", max_length=254)
+    profile_picture = forms.ImageField(
+        label="Imagen de perfil",
+        required=False,
+        widget=forms.FileInput,
+    )
