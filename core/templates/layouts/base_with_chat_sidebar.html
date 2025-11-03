@@ -1,0 +1,37 @@
+{% load i18n %}
+    {% load chat_extras %} 
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block head_title %} {% endblock head_title %}</title>
+  </head>
+  <body>
+    {% include "partials/navbar.html" %} 
+    
+
+
+<h1>Your Conversations</h1>
+
+<div class="chat-sidebar">
+    <ul class="chat-list">
+        {% for recent_thread in recent_threads %}
+            
+            {% with other_user=recent_thread|get_other_user:request.user %} 
+            
+            <li>
+                <a href="{% url 'start_chat' other_user.id %}">
+                    <strong>{{ other_user.full_name }}</strong>
+                    </a>
+            </li>
+            {% endwith %}
+        {% empty %}
+            <p>You have no current conversations.</p>
+        {% endfor %}
+    </ul>
+</div>
+    
+    {% block content %} {% endblock content %}
+  </body>
+</html>

@@ -29,9 +29,7 @@
             <h2>{{ tutorship.name }}</h2>
             <p>{{ tutorship.description }}</p>
             <ul>
-                
-                <li><a href="">Contactar con tutor</a></li>
-                <li><a href="{% url "public_user" pk=tutorship.tutor_id %}">Ver detalles del tutor</a></li>
+                                
                 {% if request.user == tutorship.tutor %}
                     <li><a href="{% url "edit_tutorship" pk=tutorship.pk %}">Editar</a></li>
                     <li>
@@ -43,6 +41,10 @@
                             </button>
                         </form>
                     </li>
+                {% else %}
+                <li><a href="{% url "start_chat" tutorship.tutor.pk %}">Contactar con tutor</a></li>
+                <li><a href="{% url "public_user" pk=tutorship.tutor_id %}">Ver detalles del tutor</a></li>
+
                 {% endif %}
             </ul>
     </div>

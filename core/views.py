@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.core.exceptions import PermissionDenied
 from . import models
 from . import forms
+from django.db.models import Q, Max, F
 
 
 # Create your views here.
@@ -213,3 +214,62 @@ def profile_update_view(request):
         }
         form = forms.UserProfileUpdateForm(initial=initial_data)
     return render(request, "profile/edit.html", {"form": form})
+
+
+@login_required
+def get_or_create_chat_thread(request, other_user_id):
+    current_user = request.user
+    other_user = get_object_or_404(models.CustomUser, id=other_user_id)
+
+    if current_user == other_user:
+        return redirect("inbox")
+
+    try:
+        thread = models.ChatThread.objects.get(
+            Q(user1=current_user, user2=other_user)
+            | Q(user1=other_user, user2=current_user)
+        )
+    except models.ChatThread.DoesNotExist:
+        if current_user.id < other_user.id:
+            thread = models.ChatThread.objects.create(
+                user1=current_user, user2=other_user
+            )
+        else:
+            thread = models.ChatThread.objects.create(
+                user1=other_user, user2=current_user
+            )
+
+    messages = thread.messages.all()
+
+    recent_threads = (
+        models.ChatThread.objects.filter(Q(user1=current_user) | Q(user2=current_user))
+        .annotate(last_message_time=Max("messages__timestamp"))
+        .order_by(
+            F("last_message_time").desc(nulls_last=True),
+            "-id",
+        )
+    )
+    context = {
+        "thread": thread,
+        "other_user": other_user,
+        "messages": messages,
+        "recent_threads": recent_threads,
+    }
+    return render(request, "chat/chat.html", context)
+
+
+@login_required
+def inbox_view(request):
+    current_user = request.user
+    recent_threads = (
+        models.ChatThread.objects.filter(Q(user1=current_user) | Q(user2=current_user))
+        .annotate(last_message_time=Max("messages__timestamp"))
+        .order_by(
+            F("last_message_time").desc(nulls_last=True),
+            "-id",
+        )
+    )
+    context = {
+        "recent_threads": recent_threads,
+    }
+    return render(request, "chat/inbox.html", context)

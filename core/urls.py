@@ -15,6 +15,10 @@ urlpatterns = [
     path("review/delete/<int:pk>/", views.delete_review, name="delete_review"),
     path("account/profile", views.private_profile, name="private_profile"),
     path("account/edit/profile", views.profile_update_view, name="profile_update_view"),
+    path("inbox/", views.inbox_view, name="inbox"),
+    path(
+        "chat/<int:other_user_id>/", views.get_or_create_chat_thread, name="start_chat"
+    ),
 ]
 
 if settings.DEBUG:
