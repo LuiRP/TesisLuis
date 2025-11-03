@@ -1,4 +1,5 @@
 {% extends "layouts/base_with_chat_sidebar.html" %}
+{% load chat_extras %}
 
 {% block content %}
 
@@ -7,58 +8,81 @@
         <h2>Chatting with {{ other_user.full_name }}</h2>
         
         <div id="chat-log" class="message-area">
-            {% for message in messages %}
-                <div class="message {% if message.sender == request.user %}mine{% else %}theirs{% endif %}">
-                    <strong>{{ message.sender.full_name }}:</strong> {{ message.content }}
-                    <span class="timestamp">{{ message.timestamp|date:"H:i" }}</span>
-                </div>
-            {% endfor %}
+    {% for message in messages %}
+        <div class="message {% if message.sender == request.user %}mine{% else %}theirs{% endif %}">
+            <strong>{{ message.sender.full_name }}:</strong> 
+            {{ message.content|linkify }} 
+            <span class="timestamp">{{ message.timestamp|date:"H:i" }}</span>
         </div>
+    {% endfor %}
+</div>
         
         <div class="chat-input">
             <input type="text" id="chat-message-input" placeholder="Type your message...">
             <button id="chat-message-submit">Send</button>
+            <button id="video-call-submit">Call</button>
         </div>
     </div>
 
 </div>
 
 <script>
+const currentUserFullName = "{{ request.user.full_name }}"; 
 
 const threadId = document.getElementById('chat-box').dataset.threadId;
 const chatSocket = new WebSocket(
     'ws://' + window.location.host + '/ws/chat/' + threadId + '/'
 );
 
-chatSocket.onmessage = function(e) {
-    const data = JSON.parse(e.data);
-    const message = data.message;
-    const sender = data.sender;
-
-    const chatLog = document.querySelector('#chat-log');
-
-    const newMessageHTML = `
-        <div class="message theirs">
-            <strong>${sender}:</strong> ${message}
-            <span class="timestamp">Just now</span>
-        </div>
-    `;
-
-    chatLog.innerHTML += newMessageHTML;
-
-    chatLog.scrollTop = chatLog.scrollHeight;
-};
-
 document.querySelector('#chat-message-submit').onclick = function(e) {
     const messageInputDom = document.querySelector('#chat-message-input');
     const message = messageInputDom.value;
     
+    if (message.trim() === '') return;
+
     chatSocket.send(JSON.stringify({
         'message': message
     }));
     
     messageInputDom.value = '';
 };
+
+function linkifyMessage(text) {
+    const meetRegex = /(https?:\/\/(meet\.new|meet\.google\.com\/\S+))/gi;
+    return text.replace(meetRegex, (url) => {
+        const linkText = url.includes('meet.new') ? 'Click to Start Call' : 'Join Call';
+        
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
+    });
+}
+
+document.querySelector('#video-call-submit').onclick = function(e) {
+    const meetLink = 'https://meet.new';  
+    window.open(meetLink, '_blank'); 
+};
+
+chatSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    const message = data.message;
+    const sender = data.sender; 
+
+    const linkedMessage = linkifyMessage(message); 
+ 
+    const messageClass = (sender === currentUserFullName) ? 'mine' : 'theirs';
+
+    const chatLog = document.querySelector('#chat-log');
+    
+    const newMessageHTML = `
+        <div class="message ${messageClass}">
+            <strong>${sender}:</strong> ${linkedMessage}
+            <span class="timestamp">Just now</span>
+        </div>
+    `;
+
+    chatLog.innerHTML += newMessageHTML;
+    chatLog.scrollTop = chatLog.scrollHeight;
+};
+
 </script>
 
 
