@@ -1,35 +1,35 @@
 {% extends "layouts/base.html" %}
-{% load chat_extras %} 
+{% load chat_extras %}
 
 {% block content %}
-<div class="container">
-    <h1>Horario Disponible de {{ tutor.full_name }}</h1>
-    <p>Selecciona un periodo para inscribirte.</p>
+    <div class="container">
+        <h1>Horario Disponible de {{ tutor.full_name }}</h1>
+        <p>Selecciona un periodo para inscribirte.</p>
 
-    {% if not periods_by_day %}
-        <p>El tutor {{ tutor.full_name }} no tiene periodos disponibles actualmente.</p>
-    {% else %}
-        <div class="schedule-grid">
-            {% for day in sorted_days %}
-                <div class="day-column">
-                    <h2>{{ day|date:"l"|capfirst }} ({{ day|date:"d M" }})</h2>
-                    
-                    <ul class="period-list">
-                        {% for period in periods_by_day|get_item:day %} 
-                            <li class="period-item">
-                                <span class="time-range">
-                                    **{{ period.start_time|date:"H:i" }} - {{ period.end_time|date:"H:i" }}**
-                                </span>
-                                
-                                <a href="{% url 'book_period' pk=period.pk %}" class="btn btn-success">
-                                    Reservar
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-</div>
+        {% if not periods_by_day %}
+            <p>El tutor {{ tutor.full_name }} no tiene periodos disponibles actualmente.</p>
+        {% else %}
+            <div class="schedule-grid">
+                {% for day in sorted_days %}
+                    <div class="day-column">
+                        <h2>{{ day|date:"l"|capfirst }} ({{ day|date:"d M" }})</h2>
+
+                        <ul class="period-list">
+                            {% for period in periods_by_day|get_item:day %}
+                                <li class="period-item">
+                                    <span class="time-range">
+                                        **{{ period.start_time|date:"H:i" }} - {{ period.end_time|date:"H:i" }}**
+                                    </span>
+
+                                    <a href="{% url 'book_period' pk=period.pk %}" class="btn btn-success">
+                                        Reservar
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
 {% endblock content %}

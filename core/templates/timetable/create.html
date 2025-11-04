@@ -1,172 +1,172 @@
 {% extends "layouts/base.html" %}
 {% load chat_extras %}
 {% block content %}
-<h1>Crear/Editar Horario</h1>
+    <h1>Crear/Editar Horario</h1>
 
-<form method="post" action=""> 
-    {% csrf_token %}
+    <form method="post" action="">
+        {% csrf_token %}
 
-    {% for day_name, date_field_name in DAY_MAP_ITEMS %}
-    <div class="day-container" data-day="{{ day_name }}">
-        <h2>{{ day_name|capfirst }}</h2>
-        
-        <button class="add-period-btn" type="button">Añadir periodo</button>
-        
-        <input type="hidden" name="{{ date_field_name }}" value="2025-11-03"> 
+        {% for day_name, date_field_name in DAY_MAP_ITEMS %}
+            <div class="day-container" data-day="{{ day_name }}">
+                <h2>{{ day_name|capfirst }}</h2>
 
-        {% for period in existing_periods_data|get_item:day_name %}
-            
-            {% with is_booked=period.is_booked %}
-            
-            <div class="period-row {% if is_booked %}booked-slot{% endif %}">
-                
-                <input type="hidden" name="periods[{{ day_name }}][pk][]" value="{{ period.pk }}">
-                
-                <input 
-                    type="time" 
-                    name="periods[{{ day_name }}][start][]" 
-                    class="time-field start-time"
-                    value="{{ period.start_time }}" 
-                    {% if is_booked %}readonly disabled{% endif %}
-                >
-                
-                <span> - </span>
+                <button class="add-period-btn" type="button">Añadir periodo</button>
 
-                <input 
-                    type="time" 
-                    name="periods[{{ day_name }}][end][]" 
-                    class="time-field end-time"
-                    value="{{ period.end_time }}" 
-                    {% if is_booked %}readonly disabled{% endif %}
-                >
+                <input type="hidden" name="{{ date_field_name }}" value="2025-11-03">
 
-                {% if is_booked %}
-                    <span class="badge booked">Reservado por: **{{ period.student_name }}**</span>
-                    
-                    {% else %}
-                    <button type="button" class="remove-btn" onclick="this.closest('.period-row').remove()">X</button>
-                {% endif %}
+                {% for period in existing_periods_data|get_item:day_name %}
+
+                    {% with is_booked=period.is_booked %}
+
+                        <div class="period-row {% if is_booked %}booked-slot{% endif %}">
+
+                            <input type="hidden" name="periods[{{ day_name }}][pk][]" value="{{ period.pk }}">
+
+                            <input
+                                type="time"
+                                name="periods[{{ day_name }}][start][]"
+                                class="time-field start-time"
+                                value="{{ period.start_time }}"
+                                {% if is_booked %}readonly disabled{% endif %}
+                            >
+
+                            <span> - </span>
+
+                            <input
+                                type="time"
+                                name="periods[{{ day_name }}][end][]"
+                                class="time-field end-time"
+                                value="{{ period.end_time }}"
+                                {% if is_booked %}readonly disabled{% endif %}
+                            >
+
+                            {% if is_booked %}
+                                <span class="badge booked">Reservado por: **{{ period.student_name }}**</span>
+
+                            {% else %}
+                                <button type="button" class="remove-btn" onclick="this.closest('.period-row').remove()">X</button>
+                            {% endif %}
+
+                        </div>
+                    {% endwith %}
+                {% endfor %}
 
             </div>
-            {% endwith %}
         {% endfor %}
 
-    </div>
-    {% endfor %}
+        <button type="submit">Guardar Cambios</button>
+    </form>
 
-    <button type="submit">Guardar Cambios</button>
-</form>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addPeriodButtons = document.querySelectorAll('.add-period-btn');
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const addPeriodButtons = document.querySelectorAll('.add-period-btn');
+            function timeToMinutes(timeString) {
+                if (!timeString) return -1;
+                const [hours, minutes] = timeString.split(':').map(Number);
+                return hours * 60 + minutes;
+            }
 
-    function timeToMinutes(timeString) {
-        if (!timeString) return -1;
-        const [hours, minutes] = timeString.split(':').map(Number);
-        return hours * 60 + minutes;
-    }
+            function isOverlapping(newStart, newEnd, existingStart, existingEnd) {
+                return !(newEnd <= existingStart || newStart >= existingEnd);
+            }
 
-    function isOverlapping(newStart, newEnd, existingStart, existingEnd) {
-        return !(newEnd <= existingStart || newStart >= existingEnd);
-    }
-    
-    function addTimeInputs(button) {
-    const container = button.closest('.day-container');
-    const day = container.getAttribute('data-day');
+            function addTimeInputs(button) {
+                const container = button.closest('.day-container');
+                const day = container.getAttribute('data-day');
 
-    const timeInput1 = document.createElement('input');
-    timeInput1.type = 'time';
-    timeInput1.name = `periods[${day}][start][]`;
-    timeInput1.classList.add('time-field', 'start-time');
+                const timeInput1 = document.createElement('input');
+                timeInput1.type = 'time';
+                timeInput1.name = `periods[${day}][start][]`;
+                timeInput1.classList.add('time-field', 'start-time');
 
-    const separator = document.createElement('span');
-    separator.textContent = ' - ';
+                const separator = document.createElement('span');
+                separator.textContent = ' - ';
 
-    const timeInput2 = document.createElement('input');
-    timeInput2.type = 'time';
-    timeInput2.name = `periods[${day}][end][]`;
-    timeInput2.classList.add('time-field', 'end-time');
-    
-    const newPeriodDiv = document.createElement('div');
-    newPeriodDiv.classList.add('period-row');
+                const timeInput2 = document.createElement('input');
+                timeInput2.type = 'time';
+                timeInput2.name = `periods[${day}][end][]`;
+                timeInput2.classList.add('time-field', 'end-time');
 
-    const pkInput = document.createElement('input');
-    pkInput.type = 'hidden';
-    pkInput.name = `periods[${day}][pk][]`;
-    pkInput.value = '';
-    newPeriodDiv.appendChild(pkInput);
+                const newPeriodDiv = document.createElement('div');
+                newPeriodDiv.classList.add('period-row');
 
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.textContent = 'X';
-    removeBtn.onclick = function() { newPeriodDiv.remove(); };
+                const pkInput = document.createElement('input');
+                pkInput.type = 'hidden';
+                pkInput.name = `periods[${day}][pk][]`;
+                pkInput.value = '';
+                newPeriodDiv.appendChild(pkInput);
 
-    newPeriodDiv.appendChild(timeInput1);
-    newPeriodDiv.appendChild(separator);
-    newPeriodDiv.appendChild(timeInput2);
-    newPeriodDiv.appendChild(removeBtn);
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.textContent = 'X';
+                removeBtn.onclick = function() { newPeriodDiv.remove(); };
 
-    [timeInput1, timeInput2].forEach(input => {
-        input.addEventListener('change', validateTimeRange);
-    });
+                newPeriodDiv.appendChild(timeInput1);
+                newPeriodDiv.appendChild(separator);
+                newPeriodDiv.appendChild(timeInput2);
+                newPeriodDiv.appendChild(removeBtn);
 
-    container.appendChild(newPeriodDiv);
-}
+                [timeInput1, timeInput2].forEach(input => {
+                    input.addEventListener('change', validateTimeRange);
+                });
 
-    function validateTimeRange(event) {
-        const input = event.target;
-        const container = input.closest('.day-container');
-        const currentRow = input.closest('.period-row');
+                container.appendChild(newPeriodDiv);
+            }
 
-        const currentStartTimeInput = currentRow.querySelector('.start-time');
-        const currentEndTimeInput = currentRow.querySelector('.end-time');
+            function validateTimeRange(event) {
+                const input = event.target;
+                const container = input.closest('.day-container');
+                const currentRow = input.closest('.period-row');
 
-        const newStart = timeToMinutes(currentStartTimeInput.value);
-        const newEnd = timeToMinutes(currentEndTimeInput.value);
-        
-        if (newStart >= 0 && newEnd >= 0 && newStart >= newEnd) {
-            alert("Error: Start time must be before End time.");
-            input.value = '';
-            return;
-        }
+                const currentStartTimeInput = currentRow.querySelector('.start-time');
+                const currentEndTimeInput = currentRow.querySelector('.end-time');
 
-        if (newStart >= 0 && newEnd > 0) {
-            
-            const existingPeriods = container.querySelectorAll('.period-row');
-            
-            let overlapFound = false;
+                const newStart = timeToMinutes(currentStartTimeInput.value);
+                const newEnd = timeToMinutes(currentEndTimeInput.value);
 
-            existingPeriods.forEach(periodRow => {
-                if (periodRow === currentRow) return;
+                if (newStart >= 0 && newEnd >= 0 && newStart >= newEnd) {
+                    alert("Error: Start time must be before End time.");
+                    input.value = '';
+                    return;
+                }
 
-                const existingStart = timeToMinutes(periodRow.querySelector('.start-time').value);
-                const existingEnd = timeToMinutes(periodRow.querySelector('.end-time').value);
+                if (newStart >= 0 && newEnd > 0) {
 
-                if (existingStart >= 0 && existingEnd > 0) {
-                    if (isOverlapping(newStart, newEnd, existingStart, existingEnd)) {
-                        overlapFound = true;
+                    const existingPeriods = container.querySelectorAll('.period-row');
+
+                    let overlapFound = false;
+
+                    existingPeriods.forEach(periodRow => {
+                        if (periodRow === currentRow) return;
+
+                        const existingStart = timeToMinutes(periodRow.querySelector('.start-time').value);
+                        const existingEnd = timeToMinutes(periodRow.querySelector('.end-time').value);
+
+                        if (existingStart >= 0 && existingEnd > 0) {
+                            if (isOverlapping(newStart, newEnd, existingStart, existingEnd)) {
+                                overlapFound = true;
+                            }
+                        }
+                    });
+
+                    if (overlapFound) {
+                        alert("Error: This time range overlaps with an existing period.");
+                        currentStartTimeInput.value = '';
+                        currentEndTimeInput.value = '';
+                    } else {
+                        console.log("Time range is valid.");
                     }
                 }
-            });
-
-            if (overlapFound) {
-                alert("Error: This time range overlaps with an existing period.");
-                currentStartTimeInput.value = '';
-                currentEndTimeInput.value = '';
-            } else {
-                console.log("Time range is valid.");
             }
-        }
-    }
 
-    addPeriodButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            addTimeInputs(this);
+            addPeriodButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    addTimeInputs(this);
+                });
+            });
         });
-    });
-});
-</script>
+    </script>
 
 {% endblock content %}

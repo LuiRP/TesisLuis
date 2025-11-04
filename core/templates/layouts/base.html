@@ -1,12 +1,37 @@
 {% load i18n %}
+{% load static tailwind_tags %}
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block head_title %} {% endblock head_title %}</title>
-  </head>
-  <body>
-    {% include "partials/navbar.html" %} {% block content %} {% endblock content %}
-  </body>
+<html data-theme="emerald">
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{% block head_title %} {% endblock head_title %}</title>
+        {% tailwind_css %}
+    </head>
+    <body class="bg-primary flex flex-col min-h-screen" >
+        {% include "partials/navbar.html" %}
+
+        <div class="p-2 grow">
+            {% block content %} {% endblock content %}
+        </div>
+
+        <div class="flex justify-center w-full py-4">
+            {% if page_obj.has_other_pages %}
+                <div class="flex justify-center w-full">
+                    <div class="join">
+                        {% if page_obj.has_previous %}
+                            <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="join-item btn btn-neutral">«</a>
+                        {% else %}
+                        {% endif %}
+
+                        <button class="join-item btn">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</button>
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="join-item btn btn-neutral">»</a>
+                        {% else %}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </body>
 </html>

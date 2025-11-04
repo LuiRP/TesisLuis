@@ -56,14 +56,14 @@ def tutorships(request):
 
     tutorships_list = tutorships_list.order_by("created_at")
 
-    paginator = Paginator(tutorships_list, 3)
+    paginator = Paginator(tutorships_list, 6)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
     return render(
         request,
         "tutorship/index.html",
-        {"page_obj": page_obj, "search_query": search_query},  # Add this to the context
+        {"page_obj": page_obj, "search_query": search_query},
     )
 
 
@@ -74,7 +74,7 @@ def create_tutorship(request):
         form = forms.TutorshipForm(request.POST)
         if form.is_valid():
             name = form.cleaned_data["name"]
-            description = form.cleaned_data["description"]
+            description = form.cleaned_data["description"].strip()
             tutor = request.user
             t = models.Tutorship(name=name, description=description, tutor=tutor)
             t.save()
@@ -94,15 +94,16 @@ def edit_tutorship(request, pk):
         form = forms.TutorshipForm(request.POST)
         if form.is_valid():
             tutorship.name = form.cleaned_data["name"]
-            tutorship.description = form.cleaned_data["description"]
+            tutorship.description = form.cleaned_data["description"].strip()
             tutorship.save()
             return HttpResponseRedirect("/tutorship")
     else:
         initial_data = {
             "name": tutorship.name,
-            "description": tutorship.description,
+            "description": tutorship.description.strip(),
         }
         form = forms.TutorshipForm(initial=initial_data)
+    print(initial_data)
     return render(
         request,
         "tutorship/edit.html",

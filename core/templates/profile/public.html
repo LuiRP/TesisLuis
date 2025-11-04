@@ -1,45 +1,45 @@
 {% extends "layouts/base.html" %}
 
-{% block content %} 
-<img src="{{ tutor.profile_picture.url }}" width="200" height="200">
-<h2>{{ tutor.full_name }}</h2>
-<h3>{{ tutor.email }}</h3>
-<a href="{% url 'tutor_schedule_select' pk=tutor.pk %}">Horario</a>
+{% block content %}
+    <img src="{{ tutor.profile_picture.url }}" width="200" height="200">
+    <h2>{{ tutor.full_name }}</h2>
+    <h3>{{ tutor.email }}</h3>
+    <a href="{% url 'tutor_schedule_select' pk=tutor.pk %}">Horario</a>
 
     {% if request.user.is_tutor %}
     {% else %}
-    <a href="{% url "create_review" pk=tutor.pk %}">Crear reseña</a>
+        <a href="{% url "create_review" pk=tutor.pk %}">Crear reseña</a>
     {% endif %}
 
 
 
-{% if page_obj %}
-    {% for review in page_obj %}
-    <div>
-        <h2>Hecha por: {{ review.author.full_name }}</h2>
-        <h3>Puntaje: {{ review.rating }}</h3>
-        <p>{{ review.body }}</p>
-        {% if request.user == review.author %}
-            <ul>
-                <li>
-                    <a href="{% url "edit_review" pk=review.pk %}">Editar reseña</a>
-                </li>
-                <li>
-                    <form action="{% url "delete_review" pk=review.pk %}" method="post" 
-                    onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta reseña?');">
-                    {% csrf_token %}
-                        <button type="submit">
-                            Eliminar reseña
-                        </button>
-                    </form>
-                </li>
-            </ul>
-        {% endif %}
-    </div>
-    {% endfor %}
-    
+    {% if page_obj %}
+        {% for review in page_obj %}
+            <div>
+                <h2>Hecha por: {{ review.author.full_name }}</h2>
+                <h3>Puntaje: {{ review.rating }}</h3>
+                <p>{{ review.body }}</p>
+                {% if request.user == review.author %}
+                    <ul>
+                        <li>
+                            <a href="{% url "edit_review" pk=review.pk %}">Editar reseña</a>
+                        </li>
+                        <li>
+                            <form action="{% url "delete_review" pk=review.pk %}" method="post"
+                                  onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta reseña?');">
+                                {% csrf_token %}
+                                <button type="submit">
+                                    Eliminar reseña
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                {% endif %}
+            </div>
+        {% endfor %}
+
     {% else %}
-    <p>Este usuario no tiene reseñas.</p>
+        <p>Este usuario no tiene reseñas.</p>
     {% endif %}
 
     {% if page_obj.has_other_pages %}

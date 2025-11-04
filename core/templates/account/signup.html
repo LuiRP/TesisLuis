@@ -1,13 +1,15 @@
-{% extends "layouts/base.html" %}
-{% block head_title %}Editar Tutoria{% endblock head_title %}
-{% load widget_tweaks %}
+{% extends "account/base_entrance.html" %}
 {% load i18n %}
+{% load allauth account %}
+{% block head_title %}
+    Registro
+{% endblock head_title %}
 {% block content %}
-    <div class="flex justify-center w-full">
-        <form action="{% url "edit_tutorship" pk=tutorship.pk %}" method="post">
-            <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
-                <legend class="fieldset-legend">Editar Tutoria</legend>
-                {% csrf_token %}
+    {% load widget_tweaks %}
+    <div class="max-w-md mx-auto my-8">
+        <form action="{{ account_signup }}" method="post">
+            {% csrf_token %}
+            <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4 gap-4">
                 {% if form.non_field_errors or form.errors %}
                     <div class="alert alert-error">
                         {% if form.non_field_errors %}
@@ -20,6 +22,8 @@
                         {% endfor %}
                     </div>
                 {% endif %}
+
+
                 {% for field in form %}
                     {% if field.widget_type == 'checkbox' %}
 
@@ -30,15 +34,6 @@
                             <label for="{{ field.id_for_label }}" class="label cursor-pointer p-0">
                                 <span class="label-text">{{ field.label }}</span>
                             </label>
-
-                            {{ field.errors }}
-                        </div>
-                    {% elif field.widget_type == 'textarea' %}
-                        <div class="form-control">
-                            <label for="{{ field.id_for_label }}" class="label justify-between w-full">
-                                <span class="label-text">{{ field.label }}</span>
-                            </label>
-                            <textarea name="{{ field.name }}" id="{{ field.id_for_label }}" class="textarea h-64">{{ field.value|default_if_none:''|safe }}</textarea>
                         </div>
 
                     {% else %}
@@ -46,19 +41,18 @@
                             <label for="{{ field.id_for_label }}" class="label justify-between w-full">
                                 <span class="label-text">{{ field.label }}</span>
                             </label>
-
-                            <div class="text-error text-sm mt-1">
-                                {{ field.errors }}
-                            </div>
-
                             {% render_field field class="input" %}
-
                         </div>
                     {% endif %}
                 {% endfor %}
-                <button class="btn btn-neutral mt-4">Crear</button>
+
+                <button class="btn btn-primary">Registrarse</button>
+                <p class="text-center">¿Ya tiene una cuenta? <a href="{% url 'account_login' %}"
+                                                                 class="link link-secondary">Inicia
+                    sesion</a></p>
+
+
             </fieldset>
         </form>
     </div>
-
-{% endblock content %}
+{% endblock %}

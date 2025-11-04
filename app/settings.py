@@ -42,7 +42,15 @@ INSTALLED_APPS = [
     "core.apps.CoreConfig",
     "allauth",
     "allauth.account",
+    "tailwind",
+    "theme",
 ]
+INSTALLED_APPS += [
+    "widget_tweaks",
+]
+
+TAILWIND_APP_NAME = "theme"
+NPM_BIN_PATH = "C:/Program Files/nodejs/npm.cmd"
 
 ASGI_APPLICATION = "app.asgi.application"
 CHANNEL_LAYERS = {
@@ -146,3 +154,10 @@ ACCOUNT_SIGNUP_FORM_CLASS = "core.forms.ExpandedSignUpForm"
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
+
+if DEBUG:
+    # Add django_browser_reload only in DEBUG mode
+    INSTALLED_APPS += ["django_browser_reload"]
+    MIDDLEWARE += [
+        "django_browser_reload.middleware.BrowserReloadMiddleware",
+    ]

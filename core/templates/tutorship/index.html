@@ -1,71 +1,84 @@
 {% extends "layouts/base.html" %}
+{% block head_title %}Tutorias{% endblock head_title %}
+
+{% block content %}
+
+    <div class="flex gap-2">
+        <div class="flex-1">
+            <form action="" method="get">
+                <label class="input w-full">
+                    <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <g
+                            stroke-linejoin="round"
+                            stroke-linecap="round"
+                            stroke-width="2.5"
+                            fill="none"
+                            stroke="currentColor"
+                        >
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.3-4.3"></path>
+                        </g>
+                    </svg>
+                    <input type="text" name="search" value="{{ search_query|default:'' }}" placeholder="Buscar tutorías" class="min-w-0">
+                </label>
 
 
-{% block content %} 
-<h1>Tutorias</h1>
-    {% if request.user.is_tutor %}
-    <a href="{% url "create_tutorship" %}">Crear tutoria</a>
-    {% endif %}
 
+                {% if request.user.is_tutor %}
+                    <div>
+                        <fieldset class="fieldset bg-base-100 border-base-300 rounded-box w-52 border p-4 py-2 mt-2">
+                            <label class="label">
+                                <input class="checkbox"
+                                       type="checkbox"
+                                       id="my_tutorships"
+                                       name="my_tutorships"
+                                       {% if show_my_tutorships %}checked{% endif %}>
+                                Mostrar solo mis tutorías
+                            </label>
+                        </fieldset>
 
-<form action="" method="get"> 
-    <input type="text" name="search" value="{{ search_query|default:'' }}" placeholder="Buscar tutorías">
-    <button type="submit">Buscar</button>
-
-    {% if request.user.is_tutor %}
-        <div>
-            <input 
-                type="checkbox" 
-                id="my_tutorships" 
-                name="my_tutorships" 
-                {% if show_my_tutorships %}checked{% endif %}>
-            <label for="my_tutorships">Mostrar solo mis tutorías</label>
-        </div>
-    {% endif %}
-</form>
-<div>
-    {% for tutorship in page_obj %}
-        <div>
-            <h2>{{ tutorship.name }}</h2>
-            <p>{{ tutorship.description }}</p>
-            <ul>
-                                
-                {% if request.user == tutorship.tutor %}
-                    <li><a href="{% url "edit_tutorship" pk=tutorship.pk %}">Editar</a></li>
-                    <li>
-                        <form action="{% url "delete_tutorship" pk=tutorship.pk %}" method="post" 
-                        onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta tutoría?');">
-                        {% csrf_token %}
-                            <button type="submit">
-                                Eliminar Tutoría
-                            </button>
-                        </form>
-                    </li>
-                {% else %}
-                <li><a href="{% url "start_chat" tutorship.tutor.pk %}">Contactar con tutor</a></li>
-                <li><a href="{% url "public_user" pk=tutorship.tutor_id %}">Ver detalles del tutor</a></li>
-
+                    </div>
                 {% endif %}
-            </ul>
-    </div>
-    {% empty %}
-        <p>No se encontraron tutorías.</p>
-    {% endfor %}
-
-    {% if page_obj.has_other_pages %}
-        <div>
-            {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Anterior</a>
-            {% endif %}
-
-            <span>
-                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
-            </span>
-
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Siguiente</a>
-            {% endif %}
+            </form>
         </div>
-    {% endif %}
-</div>
+
+        {% if request.user.is_tutor %}
+            <a href="{% url "create_tutorship" %}" class="btn">Crear tutoria</a>
+        {% endif %}
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
+        {% for tutorship in page_obj %}
+            <div class="w-full">
+                <div class="card card-border bg-base-100">
+                    <div class="card-body">
+                        <h2 class="card-title">{{ tutorship.name }}</h2>
+                        <p>{{ tutorship.description }}</p>
+                        <div class="card-actions justify-end">
+                            {% if request.user == tutorship.tutor %}
+                                <div >
+                                    <a href="{% url "edit_tutorship" pk=tutorship.pk %}" class="btn btn-warning">Editar</a>
+                                </div>
+
+                                <div>
+                                    <form action="{% url "delete_tutorship" pk=tutorship.pk %}" method="post"
+                                          onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta tutoría?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-error cursor-pointer">
+                                            Eliminar Tutoría
+                                        </button>
+                                    </form>
+                                </div>
+
+                            {% else %}
+                                <a href="{% url "start_chat" tutorship.tutor.pk %}" class="btn btn-success">Contactar</a>
+                                <a href="{% url "public_user" pk=tutorship.tutor_id %}" class="btn btn-info">Detalles del Tutor</a>
+
+                            {% endif %}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 {% endblock content %}

@@ -1,12 +1,12 @@
 {% extends "layouts/base.html" %}
 
 
-{% block content %} 
-<h1>Crear Reseña</h1>
+{% block content %}
+    <h1>Crear Reseña</h1>
 
-<form action="{% url "create_review" pk=tutor.pk %}" method="post">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="Submit">
-</form>
+    <form action="{% url "create_review" pk=tutor.pk %}" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" value="Submit">
+    </form>
 {% endblock content %}
