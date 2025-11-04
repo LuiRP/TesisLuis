@@ -19,6 +19,15 @@ urlpatterns = [
     path(
         "chat/<int:other_user_id>/", views.get_or_create_chat_thread, name="start_chat"
     ),
+    path("timetable/", views.timetable, name="timetable"),
+    path("timetable/create", views.create_timetable, name="create_timetable"),
+    path(
+        "tutor/<int:pk>/schedule/select/",
+        views.tutor_schedule_select,
+        name="tutor_schedule_select",
+    ),
+    path("period/<int:pk>/book/", views.book_period, name="book_period"),
+    path("period/<int:pk>/cancel/", views.cancel_period, name="cancel_period"),
 ]
 
 if settings.DEBUG:

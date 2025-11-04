@@ -30,3 +30,8 @@ def linkify(text):
     linked_text = linked_text.replace("**", "<strong>")
 
     return mark_safe(linked_text)
+
+
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)

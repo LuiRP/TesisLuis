@@ -1,0 +1,64 @@
+{% extends "layouts/base.html" %}
+{% load chat_extras %} 
+
+{% block content %}
+<div class="container">
+    {% if is_tutor %}
+        {% if not periods_by_day %} 
+            <p>Aún no has creado un horario. <a href="{% url 'create_timetable' %}">¡Crea tu horario!</a></p>
+        {% else %}
+            <a href="{% url 'create_timetable' %}" class="btn btn-warning">Editar horario</a>
+        {% endif %}
+    {% else %}
+        {% if not periods_by_day %}
+            <p>Aún no te has inscrito en ninguna clase.</p>
+        {% endif %}
+    {% endif %}
+
+    <div class="schedule-grid">
+        
+        {% for day in sorted_days %}
+            <div class="day-column">
+                <h2>{{ day|date:"l"|capfirst }}</h2>
+                
+                <ul class="period-list">
+                    {% for period in periods_by_day|get_item:day %} 
+                        <li class="period-item">
+                            <span class="time-range">
+                                **{{ period.start_time|date:"H:i" }} - {{ period.end_time|date:"H:i" }}**
+                            </span>
+                            
+                            {% if is_tutor %}
+                                {% if period.student %}
+                                    <span class="badge booked">Reservado por: **{{ period.student.full_name|default:period.student.username }}**</span>
+                                    
+                                    <form action="{% url 'cancel_period' pk=period.pk %}" method="post" 
+                                          onsubmit="return confirm('¿Estás seguro de que quieres liberar este slot?');" 
+                                          style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger btn-sm">Liberar Slot</button>
+                                    </form>
+                                    
+                                {% else %}
+                                    <span class="badge available">Disponible</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge booked">Tutor: **{{ period.owner.full_name|default:period.owner.username }}**</span>
+                                <span class="badge enrolled">Inscrito</span>
+                                
+                                <form action="{% url 'cancel_period' pk=period.pk %}" method="post" 
+                                      onsubmit="return confirm('¿Estás seguro de que quieres cancelar esta clase?');" 
+                                      style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm">Cancelar Inscripción</button>
+                                </form>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+        
+    </div>
+</div>
+{% endblock content %}

@@ -99,3 +99,19 @@ class Message(models.Model):
         return (
             f"Message by {self.sender.username} at {self.timestamp.strftime('%H:%M')}"
         )
+
+
+class Period(models.Model):
+    owner = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="tutor"
+    )
+    start_time = models.TimeField(auto_now=False, auto_now_add=False)
+    end_time = models.TimeField(auto_now=False, auto_now_add=False)
+    day = models.DateField(auto_now=False, auto_now_add=False)
+    student = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="student",
+    )

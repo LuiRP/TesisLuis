@@ -4,11 +4,13 @@
 <img src="{{ tutor.profile_picture.url }}" width="200" height="200">
 <h2>{{ tutor.full_name }}</h2>
 <h3>{{ tutor.email }}</h3>
+<a href="{% url 'tutor_schedule_select' pk=tutor.pk %}">Horario</a>
 
     {% if request.user.is_tutor %}
     {% else %}
     <a href="{% url "create_review" pk=tutor.pk %}">Crear reseña</a>
     {% endif %}
+
 
 
 {% if page_obj %}

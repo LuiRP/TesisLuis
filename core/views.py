@@ -7,6 +7,28 @@ from django.core.exceptions import PermissionDenied
 from . import models
 from . import forms
 from django.db.models import Q, Max, F
+from datetime import datetime
+from collections import defaultdict
+
+DAY_MAP = {
+    "lunes": "lunes_date",
+    "martes": "martes_date",
+    "miercoles": "miercoles_date",
+    "jueves": "jueves_date",
+    "viernes": "viernes_date",
+    "sabado": "sabado_date",
+    "domingo": "domingo_date",
+}
+
+WEEKDAYS_SPANISH = {
+    0: "lunes",
+    1: "martes",
+    2: "miercoles",
+    3: "jueves",
+    4: "viernes",
+    5: "sabado",
+    6: "domingo",
+}
 
 
 # Create your views here.
@@ -273,3 +295,187 @@ def inbox_view(request):
         "recent_threads": recent_threads,
     }
     return render(request, "chat/inbox.html", context)
+
+
+@login_required
+def timetable(request):
+    user = request.user
+
+    is_tutor = getattr(user, "is_tutor", False)
+
+    if is_tutor:
+        periods_queryset = models.Period.objects.filter(owner=user).order_by(
+            "day", "start_time"
+        )
+        schedule_title = "Mi Horario Completo"
+    else:
+        periods_queryset = models.Period.objects.filter(student=user).order_by(
+            "day", "start_time"
+        )
+        schedule_title = "Mis Clases Inscritas"
+    periods_by_day = {}
+    for period in periods_queryset:
+        day_key = period.day
+        if day_key not in periods_by_day:
+            periods_by_day[day_key] = []
+        periods_by_day[day_key].append(period)
+
+    sorted_days = sorted(periods_by_day.keys())
+
+    context = {
+        "periods_by_day": periods_by_day,
+        "sorted_days": sorted_days,
+        "is_tutor": is_tutor,
+        "schedule_title": schedule_title,
+    }
+
+    return render(request, "timetable/index.html", context)
+
+
+@login_required
+def create_timetable(request):
+    if request.method == "POST":
+        models.Period.objects.filter(owner=request.user, student__isnull=True).delete()
+
+        periods_to_create = []
+
+        for day, date_field_name in DAY_MAP.items():
+            day_date_str = request.POST.get(date_field_name)
+
+            if not day_date_str:
+                continue
+
+            day_date = datetime.strptime(day_date_str, "%Y-%m-%d").date()
+            start_times = request.POST.getlist(f"periods[{day}][start][]")
+            end_times = request.POST.getlist(f"periods[{day}][end][]")
+
+            if len(start_times) != len(end_times):
+                print(f"Mismatch in start/end times for {day}")
+                continue
+
+            for start_time_str, end_time_str in zip(start_times, end_times):
+                if start_time_str and end_time_str:
+                    try:
+                        start_time = datetime.strptime(start_time_str, "%H:%M").time()
+                        end_time = datetime.strptime(end_time_str, "%H:%M").time()
+
+                        if start_time >= end_time:
+                            print(
+                                f"Invalid time range skipped for {day}: {start_time_str} - {end_time_str}"
+                            )
+                            continue
+
+                        period = models.Period(
+                            owner=request.user,
+                            start_time=start_time,
+                            end_time=end_time,
+                            day=day_date,
+                            student=None,
+                        )
+                        periods_to_create.append(period)
+                    except ValueError:
+                        continue
+
+        models.Period.objects.bulk_create(periods_to_create)
+
+        return redirect("timetable")
+    existing_periods = models.Period.objects.filter(owner=request.user).order_by(
+        "day", "start_time"
+    )
+
+    existing_periods_data = defaultdict(list)
+
+    for period in existing_periods:
+        day_index = period.day.weekday()
+        day_name = WEEKDAYS_SPANISH.get(day_index, "unknown")
+
+        is_booked = period.student is not None
+        student_name = (
+            period.student.full_name
+            if period.student and hasattr(period.student, "full_name")
+            else (period.student.username if period.student else None)
+        )
+
+        existing_periods_data[day_name].append(
+            {
+                "pk": period.pk,
+                "start_time": period.start_time.strftime("%H:%M"),
+                "end_time": period.end_time.strftime("%H:%M"),
+                "is_booked": is_booked,
+                "student_name": student_name,
+            }
+        )
+
+    context = {
+        "existing_periods_data": existing_periods_data,
+        "DAY_MAP_ITEMS": DAY_MAP.items(),
+    }
+
+    return render(request, "timetable/create.html", context)
+
+
+@login_required
+def tutor_schedule_select(request, pk):
+
+    tutor = get_object_or_404(models.CustomUser, pk=pk)
+
+    if request.user == tutor:
+        pass
+
+    available_periods = models.Period.objects.filter(
+        owner=tutor, student__isnull=True
+    ).order_by("day", "start_time")
+
+    periods_by_day = defaultdict(list)
+    for period in available_periods:
+        periods_by_day[period.day].append(period)
+
+    sorted_days = sorted(periods_by_day.keys())
+
+    context = {
+        "tutor": tutor,
+        "periods_by_day": periods_by_day,
+        "sorted_days": sorted_days,
+    }
+
+    return render(request, "timetable/tutor_schedule_select.html", context)
+
+
+login_required
+
+
+def book_period(request, pk):
+    period = get_object_or_404(models.Period, pk=pk)
+
+    if period.student is not None:
+        return redirect("timetable")
+
+    if period.owner == request.user:
+        return redirect("timetable")
+
+    period.student = request.user
+    period.save()
+    return redirect("timetable")
+
+
+@login_required
+def cancel_period(request, pk):
+    if request.method != "POST":
+        return redirect("timetable")
+
+    period = get_object_or_404(models.Period, pk=pk)
+    user = request.user
+
+    is_owner = period.owner == user
+    is_student = period.student == user
+
+    if not is_owner and not is_student:
+        return redirect("timetable")
+
+    if period.student is None:
+        return redirect("timetable")
+
+    period.student = None
+    period.save()
+
+    return redirect("timetable")
