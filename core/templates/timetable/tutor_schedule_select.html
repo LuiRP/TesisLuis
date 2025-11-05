@@ -1,35 +1,164 @@
 {% extends "layouts/base.html" %}
 {% load chat_extras %}
 
+{% block head_title %}Horario de {{ tutor.full_name }}{% endblock head_title %}
+
 {% block content %}
-    <div class="container">
-        <h1>Horario Disponible de {{ tutor.full_name }}</h1>
-        <p>Selecciona un periodo para inscribirte.</p>
+    <div class="container mx-auto px-4 max-w-6xl py-8">
+        <div class="card bg-base-100 shadow-xl mb-8">
+            <div class="card-body">
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div class="avatar">
+                        <div class="w-36 h-36 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                            {% if tutor.profile_picture %}
+                                <img src="{{ tutor.profile_picture.url }}" alt="{{ tutor.full_name }}" />
+                            {% else %}
+                                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=880&q=80" alt="Default Profile" />
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="flex-1 text-center md:text-left">
+                        <h1 class="text-3xl font-bold">Horario Disponible de {{ tutor.full_name }}</h1>
+                        <p class="text-lg text-gray-500 mt-2">Selecciona un periodo para inscribirte</p>
+
+                        <div class="stats mt-4">
+                            <div class="stat">
+                                <div class="stat-title">Días Disponibles</div>
+                                <div class="stat-value">{{ sorted_days|length }}</div>
+                                <div class="stat-desc">Esta semana</div>
+                            </div>
+
+                            <div class="stat">
+                                <div class="stat-title">Horarios Totales</div>
+                                <div class="stat-value">
+                                    {% with total_slots=0 %}
+                                        {% for day in sorted_days %}
+                                            {% with day_slots=periods_by_day|get_item:day|length %}
+                                                {{ total_slots|add:day_slots }}
+                                            {% endwith %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                </div>
+                                <div class="stat-desc">Slots disponibles</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         {% if not periods_by_day %}
-            <p>El tutor {{ tutor.full_name }} no tiene periodos disponibles actualmente.</p>
+
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body text-center py-12">
+                    <div class="max-w-md mx-auto">
+                        <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="text-xl font-semibold mb-2">No hay horarios disponibles</h3>
+                        <p class="text-gray-500 mb-4">El tutor {{ tutor.full_name }} no tiene periodos disponibles actualmente.</p>
+                        <a href="{% url 'public_user' tutor.pk %}" class="btn btn-ghost">Volver al perfil</a>
+                    </div>
+                </div>
+            </div>
         {% else %}
-            <div class="schedule-grid">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {% for day in sorted_days %}
-                    <div class="day-column">
-                        <h2>{{ day|date:"l"|capfirst }} ({{ day|date:"d M" }})</h2>
+                    <div class="card bg-base-100 shadow-xl">
+                        <div class="card-body">
+                            <h2 class="card-title text-lg border-b border-base-300 pb-2 mb-4">
+                                {{ day|date:"l"|capfirst }}
+                                <span class="badge badge-outline badge-sm ml-auto">
+                                    {{ periods_by_day|get_item:day|length }} horario{{ periods_by_day|get_item:day|length|pluralize }}
+                                </span>
+                            </h2>
+                            <div class="space-y-3">
+                                {% for period in periods_by_day|get_item:day %}
+                                    <div class="flex items-center justify-between p-3 border border-base-300 rounded-lg bg-base-50 hover:bg-base-100 transition-colors">
+                                        <div class="flex items-center gap-4">
+                                            <div class="text-center">
+                                                <div class="font-bold text-lg">{{ period.start_time|date:"H:i" }}</div>
+                                                <div class="text-xs text-gray-500">Inicio</div>
+                                            </div>
+                                            <div class="text-gray-400">-</div>
+                                            <div class="text-center">
+                                                <div class="font-bold text-lg">{{ period.end_time|date:"H:i" }}</div>
+                                                <div class="text-xs text-gray-500">Fin</div>
+                                            </div>
+                                        </div>
 
-                        <ul class="period-list">
-                            {% for period in periods_by_day|get_item:day %}
-                                <li class="period-item">
-                                    <span class="time-range">
-                                        **{{ period.start_time|date:"H:i" }} - {{ period.end_time|date:"H:i" }}**
-                                    </span>
-
-                                    <a href="{% url 'book_period' pk=period.pk %}" class="btn btn-success">
-                                        Reservar
-                                    </a>
-                                </li>
-                            {% endfor %}
-                        </ul>
+                                        <a href="{% url 'book_period' pk=period.pk %}" class="btn btn-success btn-sm">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                            Reservar
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
                 {% endfor %}
             </div>
         {% endif %}
     </div>
+
+    <style>
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .day-column {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+        }
+
+        .period-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            space-y: 0.75rem;
+        }
+
+        .period-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .time-range {
+            font-weight: 600;
+            font-size: 1rem;
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .schedule-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .period-item {
+                flex-direction: column;
+                gap: 0.75rem;
+                text-align: center;
+            }
+
+            .time-range {
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        .bg-base-50 {
+            background-color: hsl(var(--b1) / 0.5);
+        }
+    </style>
 {% endblock content %}

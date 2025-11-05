@@ -1,64 +1,185 @@
 {% extends "layouts/base.html" %}
 {% load chat_extras %}
 
+{% block head_title %}{{ schedule_title }}{% endblock head_title %}
+
 {% block content %}
-    <div class="container">
-        {% if is_tutor %}
-            {% if not periods_by_day %}
-                <p>Aún no has creado un horario. <a href="{% url 'create_timetable' %}">¡Crea tu horario!</a></p>
-            {% else %}
-                <a href="{% url 'create_timetable' %}" class="btn btn-warning">Editar horario</a>
-            {% endif %}
-        {% else %}
-            {% if not periods_by_day %}
-                <p>Aún no te has inscrito en ninguna clase.</p>
-            {% endif %}
-        {% endif %}
+    <div class="container mx-auto px-4 max-w-6xl py-8">
+        <div class="card bg-base-100 shadow-xl mb-8">
+            <div class="card-body">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h1 class="text-3xl font-bold">{{ schedule_title }}</h1>
+                        <p class="text-gray-500 mt-2">
+                            {% if is_tutor %}
+                                Gestiona tu disponibilidad y las reservas de tus estudiantes
+                            {% else %}
+                                Consulta las clases en las que estás inscrito/a
+                            {% endif %}
+                        </p>
+                    </div>
 
-        <div class="schedule-grid">
-
-            {% for day in sorted_days %}
-                <div class="day-column">
-                    <h2>{{ day|date:"l"|capfirst }}</h2>
-
-                    <ul class="period-list">
-                        {% for period in periods_by_day|get_item:day %}
-                            <li class="period-item">
-                                <span class="time-range">
-                                    **{{ period.start_time|date:"H:i" }} - {{ period.end_time|date:"H:i" }}**
-                                </span>
-
-                                {% if is_tutor %}
-                                    {% if period.student %}
-                                        <span class="badge booked">Reservado por: **{{ period.student.full_name|default:period.student.username }}**</span>
-
-                                        <form action="{% url 'cancel_period' pk=period.pk %}" method="post"
-                                              onsubmit="return confirm('¿Estás seguro de que quieres liberar este slot?');"
-                                              style="display: inline;">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-danger btn-sm">Liberar Slot</button>
-                                        </form>
-
-                                    {% else %}
-                                        <span class="badge available">Disponible</span>
-                                    {% endif %}
-                                {% else %}
-                                    <span class="badge booked">Tutor: **{{ period.owner.full_name|default:period.owner.username }}**</span>
-                                    <span class="badge enrolled">Inscrito</span>
-
-                                    <form action="{% url 'cancel_period' pk=period.pk %}" method="post"
-                                          onsubmit="return confirm('¿Estás seguro de que quieres cancelar esta clase?');"
-                                          style="display: inline;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-danger btn-sm">Cancelar Inscripción</button>
-                                    </form>
-                                {% endif %}
-                            </li>
-                        {% endfor %}
-                    </ul>
+                    {% if is_tutor %}
+                        <div class="flex gap-2">
+                            {% if not periods_by_day %}
+                                <a href="{% url 'create_timetable' %}" class="btn btn-primary">Crear Horario</a>
+                            {% else %}
+                                <a href="{% url 'create_timetable' %}" class="btn btn-warning">Editar Horario</a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 </div>
-            {% endfor %}
-
+            </div>
         </div>
+
+        {% if not periods_by_day %}
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body text-center py-12">
+                    <div class="max-w-md mx-auto">
+                        <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="text-xl font-semibold mb-2">No hay horarios configurados</h3>
+                        <p class="text-gray-500 mb-6">
+                            {% if is_tutor %}
+                                Aún no has creado un horario. ¡Comienza a ofrecer tus servicios!
+                            {% else %}
+                                Aún no te has inscrito en ninguna clase.
+                            {% endif %}
+                        </p>
+                        {% if is_tutor %}
+                            <a href="{% url 'create_timetable' %}" class="btn btn-primary">Crear Mi Primer Horario</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {% for day in sorted_days %}
+                    <div class="card bg-base-100 shadow-xl">
+                        <div class="card-body">
+                            <h2 class="card-title text-lg border-b border-base-300 pb-2">
+                                {{ day|date:"l"|capfirst }}
+                                <span class="badge badge-primary badge-sm">
+                                    {{ periods_by_day|get_item:day|length }} clase{{ periods_by_day|get_item:day|length|pluralize }}
+                                </span>
+                            </h2>
+
+                            <div class="space-y-3 mt-2">
+                                {% for period in periods_by_day|get_item:day %}
+                                    <div class="border border-base-300 rounded-lg p-3 {% if period.student %}bg-base-200{% else %}bg-base-100{% endif %}">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <span class="font-semibold text-sm">
+                                                {{ period.start_time|date:"H:i" }} - {{ period.end_time|date:"H:i" }}
+                                            </span>
+                                            {% if period.student %}
+                                                <span class="badge badge-error">Reservado</span>
+                                            {% else %}
+                                                <span class="badge badge-success">Disponible</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="space-y-2">
+                                            {% if is_tutor %}
+                                                {% if period.student %}
+                                                    <div class="text-sm">
+                                                        <span class="font-medium">Estudiante:</span>
+                                                        <span class="text-gray-700">{{ period.student.full_name|default:period.student.username }}</span>
+                                                    </div>
+                                                    <form action="{% url 'cancel_period' pk=period.pk %}" method="post"
+                                                          onsubmit="return confirm('¿Estás seguro de que quieres liberar este slot?');">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-error btn-sm w-full">Liberar Slot</button>
+                                                    </form>
+                                                {% else %}
+                                                    <div class="text-sm text-gray-500 text-center py-1">
+                                                        Esperando estudiante...
+                                                    </div>
+                                                {% endif %}
+                                            {% else %}
+                                                <div class="text-sm">
+                                                    <span class="font-medium">Tutor:</span>
+                                                    <span class="text-gray-700">{{ period.owner.full_name|default:period.owner.username }}</span>
+                                                </div>
+                                                <form action="{% url 'cancel_period' pk=period.pk %}" method="post"
+                                                      onsubmit="return confirm('¿Estás seguro de que quieres cancelar esta clase?');">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-error btn-sm w-full">Cancelar Inscripción</button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
     </div>
+
+    <style>
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .schedule-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .day-column {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+        }
+
+        .period-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            space-y: 0.75rem;
+        }
+
+        .period-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .time-range {
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge.available {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge.booked {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge.enrolled {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+    </style>
 {% endblock content %}

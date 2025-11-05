@@ -1,61 +1,111 @@
 {% extends "layouts/base.html" %}
 {% load chat_extras %}
+{% block head_title %}Crear/Editar Horario{% endblock head_title %}
+
 {% block content %}
-    <h1>Crear/Editar Horario</h1>
-
-    <form method="post" action="">
-        {% csrf_token %}
-
-        {% for day_name, date_field_name in DAY_MAP_ITEMS %}
-            <div class="day-container" data-day="{{ day_name }}">
-                <h2>{{ day_name|capfirst }}</h2>
-
-                <button class="add-period-btn" type="button">Añadir periodo</button>
-
-                <input type="hidden" name="{{ date_field_name }}" value="2025-11-03">
-
-                {% for period in existing_periods_data|get_item:day_name %}
-
-                    {% with is_booked=period.is_booked %}
-
-                        <div class="period-row {% if is_booked %}booked-slot{% endif %}">
-
-                            <input type="hidden" name="periods[{{ day_name }}][pk][]" value="{{ period.pk }}">
-
-                            <input
-                                type="time"
-                                name="periods[{{ day_name }}][start][]"
-                                class="time-field start-time"
-                                value="{{ period.start_time }}"
-                                {% if is_booked %}readonly disabled{% endif %}
-                            >
-
-                            <span> - </span>
-
-                            <input
-                                type="time"
-                                name="periods[{{ day_name }}][end][]"
-                                class="time-field end-time"
-                                value="{{ period.end_time }}"
-                                {% if is_booked %}readonly disabled{% endif %}
-                            >
-
-                            {% if is_booked %}
-                                <span class="badge booked">Reservado por: **{{ period.student_name }}**</span>
-
-                            {% else %}
-                                <button type="button" class="remove-btn" onclick="this.closest('.period-row').remove()">X</button>
-                            {% endif %}
-
-                        </div>
-                    {% endwith %}
-                {% endfor %}
-
+    <div class="container mx-auto px-4 max-w-6xl py-8">
+        <div class="card bg-base-100 shadow-xl mb-8">
+            <div class="card-body">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h1 class="text-3xl font-bold">Crear/Editar Horario</h1>
+                        <p class="text-gray-500 mt-2">Gestiona tu disponibilidad semanal para clases</p>
+                    </div>
+                </div>
             </div>
-        {% endfor %}
+        </div>
 
-        <button type="submit">Guardar Cambios</button>
-    </form>
+
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <form method="post" action="" class="space-y-8">
+                    {% csrf_token %}
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {% for day_name, date_field_name in DAY_MAP_ITEMS %}
+                            <div class="day-card card bg-base-200 shadow-sm" data-day="{{ day_name }}">
+                                <div class="card-body p-4">
+
+                                    <div class="flex justify-between items-center mb-4">
+                                        <h2 class="card-title text-lg">{{ day_name|capfirst }}</h2>
+                                        <button class="add-period-btn btn btn-primary btn-sm" type="button">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                            </svg>
+                                            Añadir
+                                        </button>
+                                    </div>
+
+                                    <input type="hidden" name="{{ date_field_name }}" value="2025-11-03">
+
+                                    <div class="periods-container space-y-3">
+                                        {% for period in existing_periods_data|get_item:day_name %}
+                                            {% with is_booked=period.is_booked %}
+                                                <div class="period-row flex items-center gap-2 p-3 rounded-lg {% if is_booked %}bg-error/20 border border-error/30{% else %}bg-base-100 border border-base-300{% endif %}">
+                                                    <input type="hidden" name="periods[{{ day_name }}][pk][]" value="{{ period.pk }}">
+
+                                                    <input
+                                                        type="time"
+                                                        name="periods[{{ day_name }}][start][]"
+                                                        class="time-field start-time input input-bordered input-sm w-24 {% if is_booked %}input-disabled bg-base-300{% endif %}"
+                                                        value="{{ period.start_time }}"
+                                                        {% if is_booked %}readonly disabled{% endif %}
+                                                    >
+
+                                                    <span class="text-gray-500">-</span>
+
+                                                    <input
+                                                        type="time"
+                                                        name="periods[{{ day_name }}][end][]"
+                                                        class="time-field end-time input input-bordered input-sm w-24 {% if is_booked %}input-disabled bg-base-300{% endif %}"
+                                                        value="{{ period.end_time }}"
+                                                        {% if is_booked %}readonly disabled{% endif %}
+                                                    >
+
+                                                    {% if is_booked %}
+                                                        <div class="flex-1 min-w-0">
+                                                            <span class="badge badge-error badge-sm whitespace-nowrap truncate" title="Reservado por: {{ period.student_name }}">
+                                                                {{ period.student_name|truncatechars:15 }}
+                                                            </span>
+                                                        </div>
+                                                    {% else %}
+                                                        <button type="button" class="remove-btn btn btn-error btn-sm btn-square" onclick="this.closest('.period-row').remove()">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                            </svg>
+                                                        </button>
+                                                    {% endif %}
+                                                </div>
+                                            {% endwith %}
+                                        {% endfor %}
+                                    </div>
+
+                                    {% if not existing_periods_data|get_item:day_name %}
+                                        <div class="text-center py-4 text-gray-500">
+                                            <svg class="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            <p class="text-sm">No hay horarios</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-base-300">
+                        <div class="text-sm text-gray-500">
+                            <p>💡 <strong>Nota:</strong> Los horarios reservados no pueden ser modificados</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <a href="{% url 'timetable' %}" class="btn btn-ghost">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -72,51 +122,73 @@
             }
 
             function addTimeInputs(button) {
-                const container = button.closest('.day-container');
+                const container = button.closest('.day-card');
+                const periodsContainer = container.querySelector('.periods-container');
                 const day = container.getAttribute('data-day');
 
-                const timeInput1 = document.createElement('input');
-                timeInput1.type = 'time';
-                timeInput1.name = `periods[${day}][start][]`;
-                timeInput1.classList.add('time-field', 'start-time');
-
-                const separator = document.createElement('span');
-                separator.textContent = ' - ';
-
-                const timeInput2 = document.createElement('input');
-                timeInput2.type = 'time';
-                timeInput2.name = `periods[${day}][end][]`;
-                timeInput2.classList.add('time-field', 'end-time');
-
+            // Create new period row
                 const newPeriodDiv = document.createElement('div');
-                newPeriodDiv.classList.add('period-row');
+                newPeriodDiv.className = 'period-row flex items-center gap-2 p-3 rounded-lg bg-base-100 border border-base-300';
 
+            // Hidden PK input
                 const pkInput = document.createElement('input');
                 pkInput.type = 'hidden';
                 pkInput.name = `periods[${day}][pk][]`;
                 pkInput.value = '';
                 newPeriodDiv.appendChild(pkInput);
 
+            // Start time input
+                const timeInput1 = document.createElement('input');
+                timeInput1.type = 'time';
+                timeInput1.name = `periods[${day}][start][]`;
+                timeInput1.className = 'time-field start-time input input-bordered input-sm w-24';
+
+            // Separator
+                const separator = document.createElement('span');
+                separator.className = 'text-gray-500';
+                separator.textContent = '-';
+
+            // End time input
+                const timeInput2 = document.createElement('input');
+                timeInput2.type = 'time';
+                timeInput2.name = `periods[${day}][end][]`;
+                timeInput2.className = 'time-field end-time input input-bordered input-sm w-24';
+
+            // Remove button
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
-                removeBtn.textContent = 'X';
+                removeBtn.className = 'remove-btn btn btn-error btn-sm btn-square';
+                removeBtn.innerHTML = `
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            `;
                 removeBtn.onclick = function() { newPeriodDiv.remove(); };
 
+            // Assemble the row
                 newPeriodDiv.appendChild(timeInput1);
                 newPeriodDiv.appendChild(separator);
                 newPeriodDiv.appendChild(timeInput2);
                 newPeriodDiv.appendChild(removeBtn);
 
+            // Add validation
                 [timeInput1, timeInput2].forEach(input => {
                     input.addEventListener('change', validateTimeRange);
                 });
 
-                container.appendChild(newPeriodDiv);
+            // Add to container
+                periodsContainer.appendChild(newPeriodDiv);
+
+            // Remove empty state if it exists
+                const emptyState = periodsContainer.querySelector('.text-center');
+                if (emptyState) {
+                    emptyState.remove();
+                }
             }
 
             function validateTimeRange(event) {
                 const input = event.target;
-                const container = input.closest('.day-container');
+                const container = input.closest('.day-card');
                 const currentRow = input.closest('.period-row');
 
                 const currentStartTimeInput = currentRow.querySelector('.start-time');
@@ -126,22 +198,25 @@
                 const newEnd = timeToMinutes(currentEndTimeInput.value);
 
                 if (newStart >= 0 && newEnd >= 0 && newStart >= newEnd) {
-                    alert("Error: Start time must be before End time.");
+                    showAlert("Error: La hora de inicio debe ser anterior a la hora de fin.");
                     input.value = '';
                     return;
                 }
 
                 if (newStart >= 0 && newEnd > 0) {
-
                     const existingPeriods = container.querySelectorAll('.period-row');
-
                     let overlapFound = false;
 
                     existingPeriods.forEach(periodRow => {
                         if (periodRow === currentRow) return;
 
-                        const existingStart = timeToMinutes(periodRow.querySelector('.start-time').value);
-                        const existingEnd = timeToMinutes(periodRow.querySelector('.end-time').value);
+                        const existingStartInput = periodRow.querySelector('.start-time');
+                        const existingEndInput = periodRow.querySelector('.end-time');
+
+                        if (!existingStartInput || !existingEndInput) return;
+
+                        const existingStart = timeToMinutes(existingStartInput.value);
+                        const existingEnd = timeToMinutes(existingEndInput.value);
 
                         if (existingStart >= 0 && existingEnd > 0) {
                             if (isOverlapping(newStart, newEnd, existingStart, existingEnd)) {
@@ -151,13 +226,36 @@
                     });
 
                     if (overlapFound) {
-                        alert("Error: This time range overlaps with an existing period.");
+                        showAlert("Error: Este horario se superpone con un periodo existente.");
                         currentStartTimeInput.value = '';
                         currentEndTimeInput.value = '';
-                    } else {
-                        console.log("Time range is valid.");
                     }
                 }
+            }
+
+            function showAlert(message) {
+            // Create or show existing alert
+                let alertDiv = document.getElementById('time-validation-alert');
+                if (!alertDiv) {
+                    alertDiv = document.createElement('div');
+                    alertDiv.id = 'time-validation-alert';
+                    alertDiv.className = 'alert alert-error mb-4';
+                    alertDiv.innerHTML = `
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="alert-message"></span>
+                `;
+                    document.querySelector('.card-body').prepend(alertDiv);
+                }
+
+                alertDiv.querySelector('.alert-message').textContent = message;
+                alertDiv.classList.remove('hidden');
+
+            // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    alertDiv.classList.add('hidden');
+                }, 5000);
             }
 
             addPeriodButtons.forEach(button => {
@@ -166,7 +264,45 @@
                     addTimeInputs(this);
                 });
             });
+
+        // Initialize validation on existing time inputs
+            document.querySelectorAll('.time-field').forEach(input => {
+                input.addEventListener('change', validateTimeRange);
+            });
         });
     </script>
 
+    <style>
+        .day-card {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .day-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .period-row {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .period-row:hover {
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .time-field:focus {
+            border-color: hsl(var(--p));
+            box-shadow: 0 0 0 2px hsl(var(--p) / 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .period-row {
+                flex-wrap: wrap;
+            }
+
+            .period-row .btn {
+                margin-left: auto;
+            }
+        }
+    </style>
 {% endblock content %}

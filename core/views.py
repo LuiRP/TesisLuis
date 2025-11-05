@@ -455,9 +455,7 @@ def tutor_schedule_select(request, pk):
     return render(request, "timetable/tutor_schedule_select.html", context)
 
 
-login_required
-
-
+@login_required
 def book_period(request, pk):
     period = get_object_or_404(models.Period, pk=pk)
 
