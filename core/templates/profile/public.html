@@ -1,62 +1,127 @@
 {% extends "layouts/base.html" %}
-
+{% block head_title %}Perfil de {{tutor.full_name}}{% endblock head_title %}
 {% block content %}
-    <img src="{{ tutor.profile_picture.url }}" width="200" height="200">
-    <h2>{{ tutor.full_name }}</h2>
-    <h3>{{ tutor.email }}</h3>
-    <a href="{% url 'tutor_schedule_select' pk=tutor.pk %}">Horario</a>
+    <div class="container mx-auto px-4 max-w-4xl">
+        <div class="card bg-base-100 shadow-xl mb-8">
+            <div class="card-body">
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div class="avatar">
+                        <div class="w-32 h-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                            <img src="{{ tutor.profile_picture.url }}" width="200" height="200">
+                        </div>
+                    </div>
 
-    {% if request.user.is_tutor %}
-    {% else %}
-        <a href="{% url "create_review" pk=tutor.pk %}">Crear reseña</a>
-    {% endif %}
+                    <div class="flex-1 text-center md:text-left">
+                        <h1 class="text-3xl font-bold">{{ tutor.full_name }}</h1>
+                        <p class="text-lg text-gray-500 mt-2">{{ tutor.email }}</p>
 
+                        <div class="flex flex-row justify-between">
+                            <div class="stats mt-6">
+                                <div class="stat">
+                                    <div class="stat-title">Reseñas</div>
+                                    <div class="stat-value">{{ review_count }}</div>
+                                    <div class="stat-desc">Numero de reseñas    </div>
+                                </div>
 
+                                <div class="stat">
+                                    <div class="stat-title">Promedio de Reseña</div>
+                                    <div class="stat-value">{{ avg_rating }}</div>
+                                    <div class="stat-desc">
+                                        <div class="rating rating-sm">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= avg_rating %}
+                                                    <input type="radio" name="rating-avg" class="mask mask-star-2 bg-orange-400" checked disabled />
+                                                {% else %}
+                                                    <input type="radio" name="rating-avg" class="mask mask-star-2 bg-orange-400" disabled />
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-row gap-2 place-items-end">
+                                <div>
+                                    <a href="{% url "start_chat" tutor.pk %}" class="btn btn-success">Contactar</a>
+                                </div>
+                                <div>
+                                    <a href="{% url "tutor_schedule_select" tutor.pk %}" class="btn btn-primary">Horario</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    {% if page_obj %}
-        {% for review in page_obj %}
-            <div>
-                <h2>Hecha por: {{ review.author.full_name }}</h2>
-                <h3>Puntaje: {{ review.rating }}</h3>
-                <p>{{ review.body }}</p>
-                {% if request.user == review.author %}
-                    <ul>
-                        <li>
-                            <a href="{% url "edit_review" pk=review.pk %}">Editar reseña</a>
-                        </li>
-                        <li>
-                            <form action="{% url "delete_review" pk=review.pk %}" method="post"
-                                  onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta reseña?');">
-                                {% csrf_token %}
-                                <button type="submit">
-                                    Eliminar reseña
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <div class="flex flex-row justify-between">
+                    <h2 class="card-title text-2xl mb-6">Reviews ({{ review_count }})</h2>
+                    {% if request.user.is_tutor %}
+                    {% else %}
+                        <a href="{% url "create_review" pk=tutor.pk %}" class="btn btn-info">Crear reseña</a>
+                    {% endif %}
+                </div>
+
+                {% if page_obj %}
+                    <div class="space-y-6">
+                        {% for review in page_obj %}
+                            <div class="border-b border-base-300 pb-6">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div class="flex items-center gap-3 w-full">
+                                        <div class="avatar">
+                                            <div class="w-10 h-10 rounded-full">
+                                                {% if review.author.profile_picture %}
+                                                    <img src="{{ review.author.profile_picture.url }}" alt="Reviewer Avatar" />
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="w-full">
+                                            <div class="flex flex-row justify-between w-full">
+                                                <h3 class="font-bold">{{ review.author.full_name }}</h3>
+                                                {% if request.user == review.author %}
+                                                    <ul class="flex flex-row">
+                                                        <li>
+                                                            <a href="{% url "edit_review" pk=review.pk %}" class="btn btn-warning btn-xs">Editar reseña</a>
+                                                        </li>
+                                                        <li>
+                                                            <form action="{% url "delete_review" pk=review.pk %}" method="post"
+                                                                  onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta reseña?');">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="btn btn-error btn-xs">
+                                                                    Eliminar reseña
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                    </ul>
+                                                {% endif %}
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                <div class="rating rating-xs">
+                                                    {% for i in "12345" %}
+                                                        {% if forloop.counter <= review.rating %}
+                                                            <input type="radio" name="rating-{{ review.id }}" class="mask mask-star-2 bg-orange-400" checked disabled />
+                                                        {% else %}
+                                                            <input type="radio" name="rating-{{ review.id }}" class="mask mask-star-2 bg-orange-400" disabled />
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </div>
+                                                <span class="text-sm text-gray-500">Hace {{ review.created_at|timesince }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="mt-2">{{ review.body }}</p>
+
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <p class="text-lg text-gray-500">No se encontraron reseñas de este usuario.</p>
+                    </div>
                 {% endif %}
             </div>
-        {% endfor %}
-
-    {% else %}
-        <p>Este usuario no tiene reseñas.</p>
-    {% endif %}
-
-    {% if page_obj.has_other_pages %}
-        <div>
-            {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Anterior</a>
-            {% endif %}
-
-            <span>
-                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
-            </span>
-
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Siguiente</a>
-            {% endif %}
         </div>
-    {% endif %}
-
-
+    </div>
 {% endblock content %}

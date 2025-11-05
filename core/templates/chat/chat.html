@@ -1,37 +1,63 @@
 {% extends "layouts/base_with_chat_sidebar.html" %}
 {% load chat_extras %}
-
+{% block head_title %}Mensajes con {{ other_user.full_name }}{% endblock head_title %}
 {% block content %}
 
-    <div class="chat-container">
-        <div class="chat-main" id="chat-box" data-thread-id="{{ thread.id }}">
-            <h2>Chatting with {{ other_user.full_name }}</h2>
 
-            <div id="chat-log" class="message-area">
-                {% for message in messages %}
-                    <div class="message {% if message.sender == request.user %}mine{% else %}theirs{% endif %}">
-                        <strong>{{ message.sender.full_name }}:</strong>
-                        {{ message.content|linkify }}
-                        <span class="timestamp">{{ message.timestamp|date:"H:i" }}</span>
+    <div class="chat-main bg-base-100 rounded-box shadow-md p-4 flex flex-col" style="height: 86.5vh;" id="chat-box" data-thread-id="{{ thread.id }}">
 
-                    </div>
-                {% endfor %}
-            </div>
-
-            <div class="chat-input">
-                <input type="text" id="chat-message-input" placeholder="Type your message...">
-                <button id="chat-message-submit">Send</button>
-                <button id="video-call-submit">Call</button>
-                {% if not request.user.is_tutor %}
-                    <a href="{% url 'tutor_schedule_select' pk=other_user.pk %}">Horario</a>
-                {% endif %}
+        <div class="card bg-base-200 card-xs mb-4 px-4 shrink-0">
+            <div class="card-body flex flex-row">
+                <h2 class="card-title">{{ other_user.full_name|capfirst }}</h2>
+                <h2 class="card-title text-base-content/50">- {{ other_user.email }}</h2>
             </div>
         </div>
 
+        <div class="flex-1 overflow-y-auto rounded-lg p-2 scrollbar-hide">
+            <div id="chat-log" class="flex flex-col gap-2">
+                {% for message in messages %}
+                    {% if message.sender == request.user %}
+                        <div class="message mine justify-end">
+                            <div class="flex justify-end gap-2">
+                                <p class="timestamp text-base-content/30 text-xs font-light content-center">{{ message.timestamp|date:"H:i" }}</p>
+                                <div class="card bg-base-100 card-xs shadow-sm max-w-xs">
+                                    <div class="card-body content-center">
+                                        <p class="wrap-break-word content-center text-base-content/80 ">{{ message.content|linkify }}</p>
+                                    </div>
+                                </div>
+                                <img class="size-10 rounded-box" src="{{ message.sender.profile_picture.url }}"/>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="message theirs justify-end">
+                            <div class="flex gap-2">
+                                <img class="size-10 rounded-box" src="{{ message.sender.profile_picture.url }}"/>
+                                <div class="card bg-base-100 card-xs shadow-sm max-w-xs">
+                                    <div class="card-body content-center">
+                                        <p class="wrap-break-word content-center text-base-content/80 ">{{ message.content|linkify }}</p>
+                                    </div>
+                                </div>
+                                <p class="timestamp text-base-content/30 text-xs font-light content-center">{{ message.timestamp|date:"H:i" }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="chat-input w-full flex gap-2 mt-4 shrink-0">
+            <input class="input flex-1" type="text" id="chat-message-input" placeholder="Escribe tu mensaje...">
+            <button id="chat-message-submit" class="btn btn-success">Enviar</button>
+            <button id="video-call-submit" class="btn btn-error">Llamar</button>
+            {% if not request.user.is_tutor %}
+                <a href="{% url 'tutor_schedule_select' pk=other_user.pk %}" class="btn btn-primary">Horario</a>
+            {% endif %}
+        </div>
     </div>
 
     <script>
         const currentUserFullName = "{{ request.user.full_name }}";
+        const currentUserProfilePicture = "{{ request.user.profile_picture.url }}";
 
         const threadId = document.getElementById('chat-box').dataset.threadId;
         const chatSocket = new WebSocket(
@@ -51,12 +77,17 @@
             messageInputDom.value = '';
         };
 
+        document.querySelector('#chat-message-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.querySelector('#chat-message-submit').click();
+            }
+        });
+
         function linkifyMessage(text) {
             const meetRegex = /(https?:\/\/(meet\.new|meet\.google\.com\/\S+))/gi;
             return text.replace(meetRegex, (url) => {
                 const linkText = url.includes('meet.new') ? 'Click to Start Call' : 'Join Call';
-
-                return `<a href="${url}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">${linkText}</a>`;
             });
         }
 
@@ -69,25 +100,53 @@
             const data = JSON.parse(e.data);
             const message = data.message;
             const sender = data.sender;
+            const isCurrentUser = (sender === currentUserFullName);
 
             const linkedMessage = linkifyMessage(message);
-
-            const messageClass = (sender === currentUserFullName) ? 'mine' : 'theirs';
+            const currentTime = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
             const chatLog = document.querySelector('#chat-log');
 
-            const newMessageHTML = `
-        <div class="message ${messageClass}">
-            <strong>${sender}:</strong> ${linkedMessage}
-            <span class="timestamp">Just now</span>
-        </div>
-    `;
+            let newMessageHTML;
+
+            if (isCurrentUser) {
+                newMessageHTML = `
+                <div class="message mine justify-end">
+                    <div class="flex justify-end gap-2">
+                        <p class="timestamp text-base-content/30 text-xs font-light content-center">${currentTime}</p>
+                        <div class="card bg-base-100 card-xs shadow-sm max-w-xs">
+                            <div class="card-body content-center">
+                                <p class="wrap-break-word content-center text-base-content/80">${linkedMessage}</p>
+                            </div>
+                        </div>
+                        <img class="size-10 rounded-box" src="${currentUserProfilePicture}"/>
+                    </div>
+                </div>
+            `;
+            } else {
+                newMessageHTML = `
+                <div class="message theirs justify-end">
+                    <div class="flex gap-2">
+                        <img class="size-10 rounded-box" src="{{ other_user.profile_picture.url }}"/>
+                        <div class="card bg-base-100 card-xs shadow-sm max-w-xs">
+                            <div class="card-body content-center">
+                                <p class="wrap-break-word content-center text-base-content/80">${linkedMessage}</p>
+                            </div>
+                        </div>
+                        <p class="timestamp text-base-content/30 text-xs font-light content-center">${currentTime}</p>
+                    </div>
+                </div>
+            `;
+            }
 
             chatLog.innerHTML += newMessageHTML;
             chatLog.scrollTop = chatLog.scrollHeight;
         };
 
+        window.addEventListener('load', function() {
+            const chatLog = document.querySelector('#chat-log');
+            chatLog.scrollTop = chatLog.scrollHeight;
+        });
     </script>
-
 
 {% endblock content %}

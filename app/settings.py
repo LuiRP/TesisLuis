@@ -142,6 +142,7 @@ AUTH_USER_MODEL = "core.CustomUser"
 LOGIN_REDIRECT_URL = "/tutorship/"
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+CONSOLE_EMAIL_FORCE_ENCODING = "utf-8"
 
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_LOGIN_METHODS = {"email"}

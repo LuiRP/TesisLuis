@@ -9,6 +9,7 @@ from . import forms
 from django.db.models import Q, Max, F
 from datetime import datetime
 from collections import defaultdict
+from django.db.models import Avg
 
 DAY_MAP = {
     "lunes": "lunes_date",
@@ -130,13 +131,25 @@ def public_user(request, pk):
     reviews = models.Review.objects.filter(reviewed=tutor).order_by("-created_at")
     paginator = Paginator(reviews, 3)
 
+    review_count = reviews.count()
+    if review_count > 0:
+        avg_rating = reviews.aggregate(Avg("rating"))["rating__avg"]
+        avg_rating = round(avg_rating, 1)
+    else:
+        avg_rating = 0
+
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
     return render(
         request,
         "profile/public.html",
-        {"tutor": tutor, "page_obj": page_obj},
+        {
+            "tutor": tutor,
+            "page_obj": page_obj,
+            "review_count": review_count,
+            "avg_rating": avg_rating,
+        },
     )
 
 

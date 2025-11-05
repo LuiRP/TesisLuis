@@ -1,12 +1,69 @@
 {% extends "layouts/base.html" %}
-
-
+{% block head_title %}Crear Reseña{% endblock head_title %}
+{% load widget_tweaks %}
+{% load i18n %}
 {% block content %}
-    <h1>Crear Reseña</h1>
+    <div class="flex justify-center w-full">
+        <form action="{% url "create_review" pk=tutor.pk %}" method="post">
+            <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
+                <legend class="fieldset-legend">Crear Tutoria</legend>
 
-    <form action="{% url "create_review" pk=tutor.pk %}" method="post">
-        {% csrf_token %}
-        {{ form }}
-        <input type="submit" value="Submit">
-    </form>
+                {% csrf_token %}
+                {% if form.non_field_errors or form.errors %}
+                    <div class="alert alert-error">
+                        {% if form.non_field_errors %}
+                            <p>{{ form.non_field_errors }}</p>
+                        {% endif %}
+                        {% for field in form %}
+                            {% if field.errors %}
+                                <p>{{ field.errors }}</p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% for field in form %}
+                    {% if field.widget_type == 'checkbox' %}
+
+                        <div class="form-control flex-row items-center space-x-2 ml-2">
+
+                            {% render_field field class="checkbox" %}
+
+                            <label for="{{ field.id_for_label }}" class="label cursor-pointer p-0">
+                                <span class="label-text">{{ field.label }}</span>
+                            </label>
+
+                            {{ field.errors }}
+                        </div>
+                    {% elif field.widget_type == 'textarea' %}
+                        <div class="form-control">
+                            <label for="{{ field.id_for_label }}" class="label justify-between w-full">
+                                <span class="label-text">{{ field.label }}</span>
+                            </label>
+                            <div class="text-error text-sm mt-1">
+                                {{ field.errors }}
+                            </div>
+                            {% spaceless %}{% render_field field class="textarea" %}{% endspaceless %}
+                        </div>
+
+                    {% else %}
+                        <div class="form-control">
+                            <label for="{{ field.id_for_label }}" class="label justify-between w-full">
+                                <span class="label-text">{{ field.label }}</span>
+                            </label>
+
+                            <div class="text-error text-sm mt-1">
+                                {{ field.errors }}
+                            </div>
+
+                            {% render_field field class="input" %}
+
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+                <button class="btn btn-neutral mt-4">Crear</button>
+            </fieldset>
+        </form>
+    </div>
+
 {% endblock content %}

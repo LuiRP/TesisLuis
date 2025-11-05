@@ -23,7 +23,7 @@ def linkify(text):
     def replace_url(match):
         url = match.group(0)
 
-        return f'<a href="{url}" target="_blank" rel="noopener noreferrer">{url}</a>'
+        return f'<a href="{url}" class="link link-primary" target="_blank" rel="noopener noreferrer">{url}</a>'
 
     linked_text = meet_regex.sub(replace_url, text)
 
