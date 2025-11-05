@@ -1,12 +1,111 @@
 {% extends "layouts/base_with_profile_sidebar.html" %}
 
-
 {% block content %}
-    <h1>Editar Reseña</h1>
+    <div class="container px-4">
+        <div class="card bg-base-100 shadow-xl mb-8">
+            <div class="card-body">
+                <h1 class="text-3xl font-bold mb-6">Editar Perfil</h1>
 
-    <form action="{% url "profile_update_view" %}" enctype="multipart/form-data" method="post">
-        {% csrf_token %}
-        {{ form }}
-        <input type="submit" value="Submit">
-    </form>
+                <form action="{% url 'profile_update_view' %}" enctype="multipart/form-data" method="post" class="space-y-6">
+                    {% csrf_token %}
+
+                    <div class="flex flex-col items-center md:flex-row md:items-start gap-6 mb-8">
+                        <div class="avatar">
+                            <div class="w-32 h-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                                <img src="{{ request.user.profile_picture.url }}" width="200" height="200" alt="Current Profile Picture" id="profile-preview">
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <label class="form-control w-full max-w-xs">
+                                <div class="label">
+                                    <span class="label-text font-semibold">Foto de perfil</span>
+                                </div>
+                                <input type="file"
+                                       name="{{ form.profile_picture.name }}"
+                                       class="file-input file-input-bordered file-input-primary w-full max-w-xs"
+                                       accept="image/*"
+                                       onchange="previewImage(this)">
+                                {% if form.profile_picture.errors %}
+                                    <div class="label">
+                                        <span class="label-text-alt text-error">{{ form.profile_picture.errors }}</span>
+                                    </div>
+                                {% endif %}
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">Nombre completo</span>
+                            </label>
+                            <input type="text"
+                                   name="{{ form.full_name.name }}"
+                                   value="{{ form.full_name.value|default:'' }}"
+                                   class="input input-bordered w-full"
+                                   placeholder="Ingresa tu nombre completo">
+                            {% if form.full_name.errors %}
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ form.full_name.errors }}</span>
+                                </label>
+                            {% endif %}
+                        </div>
+                        {% for field in form %}
+                            {% if field.name not in 'profile_picture,full_name,email' %}
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text font-semibold">{{ field.label }}</span>
+                                    </label>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <label class="label">
+                                            <span class="label-text-alt text-error">{{ field.errors }}</span>
+                                        </label>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <div class="flex flex-col md:flex-row justify-end gap-4 mt-8 pt-6 border-t">
+                        <a href="{% url 'private_profile' %}" class="btn btn-outline btn-neutral">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function previewImage(input) {
+            const preview = document.getElementById('profile-preview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+
+    <style>
+        /* Style Django form fields to match DaisyUI */
+        input, textarea, select {
+            @apply input input-bordered w-full;
+        }
+
+        textarea {
+            @apply textarea textarea-bordered;
+        }
+
+        select {
+            @apply select select-bordered;
+        }
+
+        /* Ensure form errors are visible */
+        .errorlist {
+            @apply text-error text-sm mt-1;
+        }
+    </style>
 {% endblock content %}

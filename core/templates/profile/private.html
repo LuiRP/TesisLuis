@@ -1,15 +1,44 @@
 {% extends "layouts/base_with_profile_sidebar.html" %}
 
 {% block content %}
+    <div class="container px-4">
+        <div class="card bg-base-100 shadow-xl mb-8">
+            <div class="card-body">
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div class="avatar">
+                        <div class="w-32 h-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                            <img src="{{ request.user.profile_picture.url }}" width="200" height="200" alt="Profile Picture">
+                        </div>
+                    </div>
 
-    <img src="{{ request.user.profile_picture.url }}" width="200" height="200">
-    <h2>{{ request.user.full_name }}</h2>
+                    <div class="flex-1 text-center md:text-left">
+                        <h1 class="text-3xl font-bold">{{ request.user.full_name }}</h1>
+                        <p class="text-lg text-gray-500 mt-2">{{ request.user.email }}</p>
 
-    {% if request.user.is_tutor %}
-        <p>Tutor</p>
-    {% else %}
-        <p>Usuario</p>
-    {% endif %}
+                        <div class="mt-4">
+                            {% if request.user.is_tutor %}
+                                <div class="badge badge-primary badge-lg p-4">Tutor</div>
+                            {% else %}
+                                <div class="badge badge-secondary badge-lg p-4">Usuario</div>
+                            {% endif %}
+                        </div>
 
-    <a href="{% url "profile_update_view" %}">Editar</a>
+                        <div class="flex flex-col md:flex-row justify-between items-center mt-6">
+                            <div class="stats">
+                                <div class="stat">
+                                    <div class="stat-title">Miembro desde</div>
+                                    <div class="stat-value">{% if request.user.date_joined %}{{ request.user.date_joined|date:"M Y" }}{% else %}N/A{% endif %}</div>
+                                    <div class="stat-desc">Fecha de registro</div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 md:mt-0">
+                                <a href="{% url 'profile_update_view' %}" class="btn btn-primary">Editar Perfil</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock content %}
