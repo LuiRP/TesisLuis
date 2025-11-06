@@ -7,9 +7,12 @@ from django.core.exceptions import PermissionDenied
 from . import models
 from . import forms
 from django.db.models import Q, Max, F
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import defaultdict
 from django.db.models import Avg
+from django.core.mail import send_mail
+from django.conf import settings
+from django.template.loader import render_to_string
 
 DAY_MAP = {
     "lunes": "lunes_date",
@@ -239,9 +242,11 @@ def profile_update_view(request):
         if form.is_valid():
             new_full_name = form.cleaned_data["full_name"]
             new_profile_picture = form.cleaned_data.get("profile_picture")
+            description = form.cleaned_data["description"]
             user.full_name = new_full_name
             if new_profile_picture:
                 user.profile_picture = new_profile_picture
+            user.description = description
             user.save()
             return redirect("private_profile")
     else:
@@ -420,9 +425,17 @@ def create_timetable(request):
             }
         )
 
+    today = datetime.now().date()
+    start_of_week = today - timedelta(days=today.weekday())  # Monday of current week
+
+    week_dates = {}
+    for i, (day_name, date_field_name) in enumerate(DAY_MAP.items()):
+        week_dates[day_name] = start_of_week + timedelta(days=i)
+
     context = {
         "existing_periods_data": existing_periods_data,
         "DAY_MAP_ITEMS": DAY_MAP.items(),
+        "week_dates": week_dates,
     }
 
     return render(request, "timetable/create.html", context)
@@ -467,7 +480,35 @@ def book_period(request, pk):
 
     period.student = request.user
     period.save()
+
+    # Send email notification to tutor
+    send_booking_email(period)
+
     return redirect("timetable")
+
+
+def send_booking_email(period):
+    subject = f"Nueva reserva de clase - {period.student.full_name}"
+
+    context = {
+        "tutor_name": period.owner.full_name,
+        "student_name": period.student.full_name,
+        "student_email": period.student.email,
+        "day": period.day.strftime("%d/%m/%Y"),
+        "start_time": period.start_time.strftime("%H:%M"),
+        "end_time": period.end_time.strftime("%H:%M"),
+        "day_name": period.day.strftime("%A"),
+    }
+
+    message = render_to_string("emails/booking_notification.txt", context)
+
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[period.owner.email],
+        fail_silently=False,
+    )
 
 
 @login_required

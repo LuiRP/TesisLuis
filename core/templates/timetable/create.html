@@ -36,7 +36,7 @@
                                         </button>
                                     </div>
 
-                                    <input type="hidden" name="{{ date_field_name }}" value="2025-11-03">
+                                    <input type="hidden" name="{{ date_field_name }}" value="{{ week_dates|get_item:day_name|date:'Y-m-d' }}">
 
                                     <div class="periods-container space-y-3">
                                         {% for period in existing_periods_data|get_item:day_name %}

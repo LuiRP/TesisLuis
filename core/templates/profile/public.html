@@ -4,30 +4,48 @@
     <div class="container mx-auto px-4 max-w-4xl">
         <div class="card bg-base-100 shadow-xl mb-8">
             <div class="card-body">
-                <div class="flex flex-col md:flex-row items-center gap-6">
-                    <div class="avatar">
-                        <div class="w-32 h-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                            <img src="{{ tutor.profile_picture.url }}" width="200" height="200">
+                <div class="flex flex-col md:flex-row items-start gap-6">
+                    <!-- Avatar Section - Centered on mobile -->
+                    <div class="flex flex-col items-center w-full md:w-auto">
+                        <div class="avatar">
+                            <div class="w-32 h-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                                <img src="{{ tutor.profile_picture.url }}" width="200" height="200" alt="{{ tutor.full_name }}">
+                            </div>
                         </div>
                     </div>
 
-                    <div class="flex-1 text-center md:text-left">
-                        <h1 class="text-3xl font-bold">{{ tutor.full_name }}</h1>
-                        <p class="text-lg text-gray-500 mt-2">{{ tutor.email }}</p>
+                    <!-- Content Section -->
+                    <div class="flex-1 w-full">
+                        <div class="text-center md:text-left">
+                            <h1 class="text-3xl font-bold wrap-break-wordword">{{ tutor.full_name }}</h1>
+                            <p class="text-lg text-gray-500 mt-2 wrap-break-word">{{ tutor.email }}</p>
+                        </div>
 
-                        <div class="flex flex-row justify-between">
-                            <div class="stats mt-6">
+                        <!-- Description Section -->
+                        {% if tutor.description %}
+                            <div class="mt-6 p-4 bg-base-200 rounded-lg w-full">
+                                <p class="text-base leading-relaxed whitespace-pre-line wrap-break-word">{{ tutor.description }}</p>
+                            </div>
+                        {% else %}
+                            <div class="mt-6 p-4 bg-base-200 rounded-lg w-full">
+                                <p class="text-gray-500 italic text-center">Este tutor no ha agregado una descripción aún.</p>
+                            </div>
+                        {% endif %}
+
+                        <!-- Stats and Actions -->
+                        <div class="flex flex-col lg:flex-row justify-between items-center mt-6 gap-4">
+                            <div class="stats shadow flex flex-col sm:flex-row">
                                 <div class="stat">
                                     <div class="stat-title">Reseñas</div>
-                                    <div class="stat-value">{{ review_count }}</div>
-                                    <div class="stat-desc">Numero de reseñas    </div>
+                                    <div class="stat-value text-lg sm:text-xl">{{ review_count }}</div>
+                                    <div class="stat-desc">Número de reseñas</div>
                                 </div>
 
                                 <div class="stat">
-                                    <div class="stat-title">Promedio de Reseña</div>
-                                    <div class="stat-value">{{ avg_rating }}</div>
+                                    <div class="stat-title">Promedio</div>
+                                    <div class="stat-value text-lg sm:text-xl">{{ avg_rating }}</div>
                                     <div class="stat-desc">
-                                        <div class="rating rating-sm">
+                                        <div class="rating rating-sm justify-center sm:justify-start">
                                             {% for i in "12345" %}
                                                 {% if forloop.counter <= avg_rating %}
                                                     <input type="radio" name="rating-avg" class="mask mask-star-2 bg-orange-400" checked disabled />
@@ -39,12 +57,12 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex flex-row gap-2 place-items-end">
+                            <div class="flex flex-row gap-2 justify-center sm:justify-start">
                                 <div>
-                                    <a href="{% url "start_chat" tutor.pk %}" class="btn btn-success">Contactar</a>
+                                    <a href="{% url "start_chat" tutor.pk %}" class="btn btn-success btn-sm sm:btn-md">Contactar</a>
                                 </div>
                                 <div>
-                                    <a href="{% url "tutor_schedule_select" tutor.pk %}" class="btn btn-primary">Horario</a>
+                                    <a href="{% url "tutor_schedule_select" tutor.pk %}" class="btn btn-primary btn-sm sm:btn-md">Horario</a>
                                 </div>
                             </div>
                         </div>
@@ -53,50 +71,47 @@
             </div>
         </div>
 
+        <!-- Reviews Section -->
         <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
-                <div class="flex flex-row justify-between">
-                    <h2 class="card-title text-2xl mb-6">Reviews ({{ review_count }})</h2>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <h2 class="card-title text-2xl">Reviews ({{ review_count }})</h2>
                     {% if request.user.is_tutor %}
                     {% else %}
-                        <a href="{% url "create_review" pk=tutor.pk %}" class="btn btn-info">Crear reseña</a>
+                        <a href="{% url "create_review" pk=tutor.pk %}" class="btn btn-info btn-sm sm:btn-md">Crear reseña</a>
                     {% endif %}
                 </div>
 
                 {% if page_obj %}
-                    <div class="space-y-6">
+                    <div class="space-y-6 mt-6">
                         {% for review in page_obj %}
                             <div class="border-b border-base-300 pb-6">
                                 <div class="flex justify-between items-start mb-2">
                                     <div class="flex items-center gap-3 w-full">
-                                        <div class="avatar">
+                                        <div class="avatar shrink-0">
                                             <div class="w-10 h-10 rounded-full">
                                                 {% if review.author.profile_picture %}
                                                     <img src="{{ review.author.profile_picture.url }}" alt="Reviewer Avatar" />
                                                 {% endif %}
                                             </div>
                                         </div>
-                                        <div class="w-full">
-                                            <div class="flex flex-row justify-between w-full">
-                                                <h3 class="font-bold">{{ review.author.full_name }}</h3>
+                                        <div class="w-full min-w-0">
+                                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 w-full">
+                                                <h3 class="font-bold wrap-break-word">{{ review.author.full_name }}</h3>
                                                 {% if request.user == review.author %}
-                                                    <ul class="flex flex-row">
-                                                        <li>
-                                                            <a href="{% url "edit_review" pk=review.pk %}" class="btn btn-warning btn-xs">Editar reseña</a>
-                                                        </li>
-                                                        <li>
-                                                            <form action="{% url "delete_review" pk=review.pk %}" method="post"
-                                                                  onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta reseña?');">
-                                                                {% csrf_token %}
-                                                                <button type="submit" class="btn btn-error btn-xs">
-                                                                    Eliminar reseña
-                                                                </button>
-                                                            </form>
-                                                        </li>
-                                                    </ul>
+                                                    <div class="flex flex-row gap-2 flex-wrap">
+                                                        <a href="{% url "edit_review" pk=review.pk %}" class="btn btn-warning btn-xs">Editar</a>
+                                                        <form action="{% url "delete_review" pk=review.pk %}" method="post"
+                                                              onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta reseña?');">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-error btn-xs">
+                                                                Eliminar
+                                                            </button>
+                                                        </form>
+                                                    </div>
                                                 {% endif %}
                                             </div>
-                                            <div class="flex items-center gap-1">
+                                            <div class="flex flex-col sm:flex-row sm:items-center gap-1 mt-1">
                                                 <div class="rating rating-xs">
                                                     {% for i in "12345" %}
                                                         {% if forloop.counter <= review.rating %}
@@ -111,8 +126,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <p class="mt-2">{{ review.body }}</p>
-
+                                <p class="mt-2 wrap-break-word">{{ review.body }}</p>
                             </div>
                         {% endfor %}
                     </div>

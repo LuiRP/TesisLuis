@@ -40,7 +40,18 @@
                             </label>
                             <textarea name="{{ field.name }}" id="{{ field.id_for_label }}" class="textarea h-64">{{ field.value|default_if_none:''|safe }}</textarea>
                         </div>
+                    {% elif field.widget_type == 'select' %}
 
+                        <div class="form-control flex-row items-center space-x-2">
+                            <label for="{{ field.id_for_label }}" class="label">
+                                <span class="label-text">{{ field.label }}</span>
+                            </label>
+                            {% render_field field class="select" %}
+
+
+
+                            {{ field.errors }}
+                        </div>
                     {% else %}
                         <div class="form-control">
                             <label for="{{ field.id_for_label }}" class="label justify-between w-full">

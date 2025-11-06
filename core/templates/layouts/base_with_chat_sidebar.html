@@ -34,7 +34,7 @@
                                     <a href="{% url 'start_chat' other_user.id %}" class="block hover:bg-base-200 transition-colors">
                                         <li class="list-row p-3">
                                             <div class="flex items-center gap-3">
-                                                <img class="size-10 rounded-box flex-shrink-0" src="{{ other_user.profile_picture.url }}" alt="{{ other_user.full_name }}"/>
+                                                <img class="size-10 rounded-box shrink-0" src="{{ other_user.profile_picture.url }}" alt="{{ other_user.full_name }}"/>
                                                 <div class="min-w-0 flex-1">
                                                     <div class="font-semibold text-sm truncate">{{ other_user.full_name|capfirst }}</div>
                                                     <div class="text-xs text-gray-500 truncate">{{ other_user.email }}</div>
@@ -47,12 +47,12 @@
                             {% empty %}
                                 <li class="p-4 text-center text-gray-500">No hay mensajes</li>
                             {% endfor %}
-                            
+
                         </ul>
                     </div>
                 </div>
             </div>
-            
+
             <div class="w-full sm:w-8/12 lg:w-9/12 min-h-0 flex-1">
                 {% block content %} {% endblock content %}
             </div>

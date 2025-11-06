@@ -1,0 +1,13 @@
+Hola {{ tutor_name }},
+
+Tienes una nueva reserva de clase.
+
+Estudiante: {{ student_name }}
+Email: {{ student_email }}
+Fecha: {{ day_name }}, {{ day }}
+Horario: {{ start_time }} - {{ end_time }}
+
+Puedes gestionar tus reservas en tu panel de horarios.
+
+¡Saludos!
+Equipo de Tutorías
