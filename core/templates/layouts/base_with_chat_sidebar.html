@@ -21,35 +21,41 @@
     <body class="bg-primary flex flex-col min-h-screen">
         {% include "partials/navbar.html" %}
 
-        <div class="p-2 grow flex gap-2 min-h-0">
-            <div class="chat-sidebar w-4/12 grow hidden sm:block min-h-0">
-                <div class="bg-base-100 rounded-box shadow-md flex flex-col" style="height: 86.5vh;">
-                    <li class="p-4 pb-2 text-xs opacity-60 tracking-wide sticky top-0 bg-base-100 ">Mensajes</li>
+        <div class="p-2 grow flex flex-col sm:flex-row gap-2 min-h-0">
+            <div class="chat-sidebar w-full sm:w-4/12 lg:w-3/12 min-h-0 {% block sidebar_class %}{% endblock %}">
+                <div class="bg-base-100 rounded-box shadow-md flex flex-col h-full max-h-[calc(100vh-140px)] sm:max-h-[86.5vh]">
+                    <div class="p-4 pb-2 text-xs opacity-60 tracking-wide sticky top-0 bg-base-100 ">
+                        Mensajes
+                    </div>
                     <div class="flex-1 overflow-y-auto scrollbar-hide">
                         <ul class="list">
                             {% for recent_thread in recent_threads %}
                                 {% with other_user=recent_thread|get_other_user:request.user %}
-                                    <a href="{% url 'start_chat' other_user.id %}">
-                                        <li class="list-row">
-                                            <div><img class="size-10 rounded-box" src="{{ other_user.profile_picture.url }}"/></div>
-                                            <div class="list-col-grow">
-                                                <div>{{ other_user.full_name|capfirst }} - {{ other_user.email }}</div>
-                                                <div class="text-xs uppercase font-semibold opacity-60">{{ recent_thread.last_message_time }}</div>
+                                    <a href="{% url 'start_chat' other_user.id %}" class="block hover:bg-base-200 transition-colors">
+                                        <li class="list-row p-3">
+                                            <div class="flex items-center gap-3">
+                                                <img class="size-10 rounded-box flex-shrink-0" src="{{ other_user.profile_picture.url }}" alt="{{ other_user.full_name }}"/>
+                                                <div class="min-w-0 flex-1">
+                                                    <div class="font-semibold text-sm truncate">{{ other_user.full_name|capfirst }}</div>
+                                                    <div class="text-xs text-gray-500 truncate">{{ other_user.email }}</div>
+                                                    <div class="text-xs uppercase font-semibold opacity-60 mt-1">{{ recent_thread.last_message_time }}</div>
+                                                </div>
                                             </div>
                                         </li>
                                     </a>
                                 {% endwith %}
                             {% empty %}
-
+                                <li class="p-4 text-center text-gray-500">No hay mensajes</li>
                             {% endfor %}
+                            
                         </ul>
                     </div>
                 </div>
             </div>
-            <div class="w-full sm:w-8/12 min-h-0">
+            
+            <div class="w-full sm:w-8/12 lg:w-9/12 min-h-0 flex-1">
                 {% block content %} {% endblock content %}
             </div>
         </div>
-    </div>
-</body>
+    </body>
 </html>

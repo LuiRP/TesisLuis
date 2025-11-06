@@ -52,6 +52,7 @@
                 <div class="card card-border bg-base-100">
                     <div class="card-body">
                         <h2 class="card-title">{{ tutorship.name }}</h2>
+                        <h2 class="text-md">Tutor: {{ tutorship.tutor.full_name }}</h2>
                         <p>{{ tutorship.description }}</p>
                         <div class="card-actions justify-end">
                             {% if request.user == tutorship.tutor %}

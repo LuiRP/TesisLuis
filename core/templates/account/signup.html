@@ -11,7 +11,7 @@
             {% csrf_token %}
             <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4 gap-4">
                 {% if form.non_field_errors or form.errors %}
-                    <div class="alert alert-error">
+                    <div class="alert alert-error flex flex-col">
                         {% if form.non_field_errors %}
                             <p>{{ form.non_field_errors }}</p>
                         {% endif %}
