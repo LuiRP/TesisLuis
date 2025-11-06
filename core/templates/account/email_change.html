@@ -61,7 +61,7 @@
                             {% blocktranslate %}Your email address is still pending verification.{% endblocktranslate %}
                         </p>
                         <div class="flex flex-wrap gap-2">
-                            <form id="pending-email-resend" method="post" action="{% url 'account_email' %}" class="inline">
+                            <form method="post" action="{% url 'account_email' %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="email" value="{{ new_emailaddress.email }}">
                                 <button type="submit" name="action_send" class="btn btn-outline btn-secondary btn-sm">
@@ -69,7 +69,7 @@
                                 </button>
                             </form>
                             {% if current_emailaddress %}
-                                <form id="pending-email-remove" method="post" action="{% url 'account_email' %}" class="inline">
+                                <form method="post" action="{% url 'account_email' %}">
                                     {% csrf_token %}
                                     <input type="hidden" name="email" value="{{ new_emailaddress.email }}">
                                     <button type="submit" name="action_remove" class="btn btn-outline btn-error btn-sm">

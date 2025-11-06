@@ -3,8 +3,9 @@
 {% block content %}
     <div class="card bg-base-100 shadow-xl mb-8 h-full">
         <div class="card-body">
-            <div class="flex flex-col md:flex-row items-start gap-6">
-                <div class="flex flex-col items-center">
+            <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+                <!-- Avatar Section - Always centered on mobile -->
+                <div class="flex flex-col items-center w-full md:w-auto">
                     <div class="avatar">
                         <div class="w-32 h-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
                             <img src="{{ request.user.profile_picture.url }}" width="200" height="200" alt="Profile Picture">
@@ -20,37 +21,40 @@
                     </div>
                 </div>
 
-                <div class="flex-1">
-                    <div class="text-center md:text-left">
-                        <h1 class="text-3xl font-bold">{{ request.user.full_name }}</h1>
-                        <p class="text-lg text-gray-500 mt-2">{{ request.user.email }}</p>
+                <!-- Content Section -->
+                <div class="flex-1 w-full text-center md:text-left">
+                    <div>
+                        <h1 class="text-3xl font-bold break-words">{{ request.user.full_name }}</h1>
+                        <p class="text-lg text-gray-500 mt-2 break-words">{{ request.user.email }}</p>
                     </div>
 
                     <!-- Description Section -->
                     {% if request.user.description %}
                         <div class="mt-6 p-4 bg-base-200 rounded-lg">
-                            <h3 class="text-lg font-semibold mb-2">Descripción</h3>
-                            <p class="text-base leading-relaxed whitespace-pre-line">{{ request.user.description }}</p>
+                            <h3 class="text-lg font-semibold mb-2 text-center md:text-left">Descripción</h3>
+                            <p class="text-base leading-relaxed whitespace-pre-line break-words">{{ request.user.description }}</p>
                         </div>
                     {% else %}
-                        <div class="mt-6 p-4 bg-base-200 rounded-lg text-center">
-                            <p class="text-gray-500 italic">No hay descripción disponible.
+                        <div class="mt-6 p-4 bg-base-200 rounded-lg">
+                            <p class="text-gray-500 italic text-center md:text-left">
+                                No hay descripción disponible.
                                 <a href="{% url 'profile_update_view' %}" class="link link-primary">Agrega una descripción</a>
                                 para que otros usuarios te conozcan mejor.
                             </p>
                         </div>
                     {% endif %}
 
-                    <div class="flex flex-col md:flex-row justify-between items-center mt-6">
-                        <div class="stats shadow">
+                    <!-- Stats and Actions -->
+                    <div class="flex flex-col md:flex-row justify-between items-center mt-6 gap-4">
+                        <div class="stats shadow flex flex-col sm:flex-row">
                             <div class="stat">
                                 <div class="stat-title">Miembro desde</div>
-                                <div class="stat-value text-lg">{% if request.user.date_joined %}{{ request.user.date_joined|date:"M Y" }}{% else %}N/A{% endif %}</div>
+                                <div class="stat-value text-lg sm:text-xl">{% if request.user.date_joined %}{{ request.user.date_joined|date:"M Y" }}{% else %}N/A{% endif %}</div>
                                 <div class="stat-desc">Fecha de registro</div>
                             </div>
                         </div>
 
-                        <div class="mt-4 md:mt-0">
+                        <div class="flex justify-center md:justify-start">
                             <a href="{% url 'profile_update_view' %}" class="btn btn-primary">Editar Perfil</a>
                         </div>
                     </div>

@@ -2397,9 +2397,6 @@
   .flex-none {
     flex: none;
   }
-  .flex-shrink-0 {
-    flex-shrink: 0;
-  }
   .shrink-0 {
     flex-shrink: 0;
   }
@@ -2452,9 +2449,6 @@
   }
   .place-items-center {
     place-items: center;
-  }
-  .place-items-end {
-    place-items: end;
   }
   .content-center {
     align-content: center;
@@ -2523,9 +2517,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-  .overflow-auto {
-    overflow: auto;
   }
   .overflow-y-auto {
     overflow-y: auto;
@@ -2755,9 +2746,6 @@
   .tracking-wide {
     --tw-tracking: var(--tracking-wide);
     letter-spacing: var(--tracking-wide);
-  }
-  .break-words {
-    overflow-wrap: break-word;
   }
   .wrap-break-word {
     overflow-wrap: break-word;

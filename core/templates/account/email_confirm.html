@@ -1,0 +1,92 @@
+{% extends "account/base_entrance.html" %}
+{% load i18n %}
+{% load account %}
+{% load allauth %}
+{% load widget_tweaks %}
+
+{% block head_title %}
+    {% trans "Confirmar Dirección de Email" %}
+{% endblock head_title %}
+
+{% block content %}
+    {% if confirmation %}
+        {% user_display confirmation.email_address.user as user_display %}
+        {% if can_confirm %}
+            <div class="card bg-base-100 shadow-xl max-w-md mx-auto">
+                <div class="card-body">
+                    <h1 class="card-title text-2xl font-bold justify-center mb-4">
+                        {% trans "Confirmar Dirección de Email" %}
+                    </h1>
+                    
+                    <div class="text-center mb-6">
+                        <p class="text-base-content/80">
+                            {% blocktrans with confirmation.email_address.email as email %}
+                                Por favor confirma que <a href="mailto:{{ email }}" class="link link-primary">{{ email }}</a> 
+                                es una dirección de email para el usuario <strong>{{ user_display }}</strong>.
+                            {% endblocktrans %}
+                        </p>
+                    </div>
+
+                    {% url 'account_confirm_email' confirmation.key as action_url %}
+                    <form method="post" action="{{ action_url }}" class="space-y-4">
+                        {% csrf_token %}
+                        {{ redirect_field }}
+                        <div class="flex justify-center">
+                            <button type="submit" class="btn btn-primary w-full">
+                                {% trans 'Confirmar' %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <div class="card bg-base-100 shadow-xl max-w-md mx-auto">
+                <div class="card-body">
+                    <h1 class="card-title text-2xl font-bold justify-center mb-4 text-error">
+                        {% trans "No se puede confirmar el email" %}
+                    </h1>
+                    
+                    <div class="alert alert-error">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>
+                            {% blocktrans with email=confirmation.email_address.email %}
+                                No se puede confirmar {{ email }} porque ya está confirmado por una cuenta diferente.
+                            {% endblocktrans %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="card bg-base-100 shadow-xl max-w-md mx-auto">
+            <div class="card-body">
+                <h1 class="card-title text-2xl font-bold justify-center mb-4 text-warning">
+                    {% trans "Enlace de confirmación inválido" %}
+                </h1>
+                
+                <div class="alert alert-warning">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <span>
+                        {% url 'account_email' as email_url %}
+                        {% blocktrans %}
+                            Este enlace de confirmación de email ha expirado o es inválido. Por favor 
+                            <a href="{{ email_url }}" class="link link-warning font-semibold">
+                                solicita un nuevo enlace de confirmación
+                            </a>.
+                        {% endblocktrans %}
+                    </span>
+                </div>
+                
+                <div class="flex justify-center mt-4">
+                    <a href="{{ email_url }}" class="btn btn-warning">
+                        {% trans "Solicitar Nueva Confirmación" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock content %}
